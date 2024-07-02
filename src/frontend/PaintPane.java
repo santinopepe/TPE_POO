@@ -11,9 +11,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.ColorPicker;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -44,25 +42,67 @@ PaintPane extends BorderPane {
 	// Selector de color de relleno
 	private final ColorPicker fillColorPicker = new ColorPicker(defaultFillColor);
 
+	//Selector del color secundario.
+	private final ColorPicker fillSecondaryColorPicker = new ColorPicker(defaultFillColor);
+
+	//slider para el borde
+	private final Slider borderSlider = new Slider(0,10, 0);
+
 	// Dibujar una figura
 	private Point startPoint;
 
 	// Seleccionar una figura
 	private Figure selectedFigure;
 
+	//seleccionar un tipo de sombra
+	private ShadowType shadow;
+
+	//seleccionar un tipo de borde
+	private EdgeType edge;
+
 	// StatusBar
 	private final StatusPane statusPane;
 
 	// Colores de relleno de cada figura
+
+	private final Map<Figure, FigureProperties> figurePropertiesMap = new HashMap<>();
+
 	private final Map<Figure, Color> figureColorMap = new HashMap<>();
 
 	private final Map<ToggleButton, Figure> figureButtonMap = new HashMap<>();
 
 	private final Map<Class<? extends Figure>, DrawFigure> drawFigureMap = new HashMap<>();
 
+	ChoiceBox<ShadowType> shadowsBox = new ChoiceBox<>();
+	ChoiceBox<EdgeType> edgeBox = new ChoiceBox<>();
+
 	public PaintPane(CanvasState canvasState, StatusPane statusPane) {
 		this.canvasState = canvasState;
 		this.statusPane = statusPane;
+
+		ChoiceBox<ShadowType> shadowsBox = new ChoiceBox<>();
+		ChoiceBox<EdgeType> edgeBox = new ChoiceBox<>();
+		Label shadowLable = new Label("Sombras");
+		Label borderLable = new Label("Borde");
+		Label fillingLable = new Label("Relleno");
+		shadowsBox.getItems().addAll(ShadowType.NONE, ShadowType.SIMPLE, ShadowType.COLOURED, ShadowType.SIMPLE_INVERSED, ShadowType.COLOURED_INVERSED);
+		edgeBox.getItems().addAll(EdgeType.NORMAL,EdgeType.SIMPLE_DOTTED, EdgeType.COMPLEX_DOTTED);
+
+		shadowsBox.setValue(ShadowType.NONE);
+		shadowsBox.setOnAction(event -> {
+			shadow = shadowsBox.getValue();
+		});
+
+		edgeBox.setValue(EdgeType.NORMAL);
+		edgeBox.setOnAction(event -> {
+			edge = edgeBox.getValue();
+		});
+
+		borderSlider.setMin(0);
+		borderSlider.setMax(10);
+		borderSlider.setValue(5); // Valor inicial
+		borderSlider.setShowTickLabels(true);
+
 		ToggleButton[] toolsArr = {selectionButton, rectangleButton, circleButton, squareButton, ellipseButton, deleteButton};
 		ToggleGroup tools = new ToggleGroup();
 
@@ -81,6 +121,8 @@ PaintPane extends BorderPane {
 		drawFigureMap.put(Ellipse.class,new DrawEllipse(gc, new FigureProperties(null, null, null, null, 0.0),
 				new  Ellipse(new Point(0,0),1,1)));
 
+
+
 		for (ToggleButton tool : toolsArr) {
 			tool.setMinWidth(90);
 			tool.setToggleGroup(tools);
@@ -88,7 +130,14 @@ PaintPane extends BorderPane {
 		}
 		VBox buttonsBox = new VBox(10);
 		buttonsBox.getChildren().addAll(toolsArr);
+		buttonsBox.getChildren().add(shadowLable);
+		buttonsBox.getChildren().add(shadowsBox);
+		buttonsBox.getChildren().add(fillingLable);
 		buttonsBox.getChildren().add(fillColorPicker);
+		buttonsBox.getChildren().add(fillSecondaryColorPicker);
+		buttonsBox.getChildren().add(borderLable);
+		buttonsBox.getChildren().add(edgeBox);
+		buttonsBox.getChildren().add(borderSlider);
 		buttonsBox.setPadding(new Insets(5));
 		buttonsBox.setStyle("-fx-background-color: #999");
 		buttonsBox.setPrefWidth(100);
@@ -107,16 +156,15 @@ PaintPane extends BorderPane {
 				return ;
 			}
 			Figure newFigure = null;
-
 			for(ToggleButton button : toolsArr){
 				if(button.isSelected() && !button.equals(selectionButton) && !button.equals(deleteButton) ){
 					newFigure = figureButtonMap.get(button).createNewFigure(startPoint,endPoint,Math.abs(endPoint.getX()
 									- startPoint.getX()),Math.abs(endPoint.getY() - startPoint.getY()), Math.abs(endPoint.getX() - startPoint.getX()));
 				}
 			}
-
 			if (newFigure != null) {
-				figureColorMap.put(newFigure, fillColorPicker.getValue());
+				figureColorMap.put(newFigure,fillColorPicker.getValue());
+				figurePropertiesMap.put(newFigure, new FigureProperties(fillColorPicker.getValue(), shadowsBox.getValue(), fillSecondaryColorPicker.getValue(), edgeBox.getValue(), borderSlider.getValue()));
 				canvasState.add(newFigure);
 			}
 
@@ -152,7 +200,11 @@ PaintPane extends BorderPane {
 						found = true;
 						selectedFigure = figure;
 						label.append(figure);
+						FigureProperties figureProperties = new FigureProperties(fillColorPicker.getValue(), shadowsBox.getValue(),
+								fillSecondaryColorPicker.getValue(), edgeBox.getValue(), borderSlider.getValue());
+						figurePropertiesMap.replace(figure,figureProperties);
 					}
+
 				}
 				if (found) {
 					statusPane.updateStatus(label.toString());
@@ -161,6 +213,7 @@ PaintPane extends BorderPane {
 					statusPane.updateStatus("Ninguna figura encontrada");
 				}
 				redrawCanvas();
+
 			}
 		});
 
@@ -198,9 +251,9 @@ PaintPane extends BorderPane {
 			} else {
 				gc.setStroke(lineColor);
 			}
-			Color primaryColor = figureColorMap.get(figure);
+			FigureProperties fp = figurePropertiesMap.get(figure);
 			DrawFigure drawFigure = drawFigureMap.get(figure.getClass());
-			drawFigure.createDrawfigure(gc,new FigureProperties(primaryColor, ShadowType.NONE,null, EdgeType.NORMAL,0.0),figure).drawFigure();
+			drawFigure.createDrawfigure(gc,fp,figure).drawFigure();
 		}
 	}
 
