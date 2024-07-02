@@ -90,6 +90,11 @@ public class Rectangle implements Figure {
     }
 
     @Override
+    public Figure createDividedFigure(Point point1, Point point2, Point centerP, double axis1, double axis2) {
+        return new Rectangle(point1, point2);
+    }
+
+    @Override
     public void centerFigure(double canvasWidth, double canvasHeight) {
         double rectWidth = Math.abs(topLeft.getX() - bottomRight.getX());
         double rectHeight = Math.abs(topLeft.getY() - bottomRight.getY());
@@ -102,16 +107,4 @@ public class Rectangle implements Figure {
         bottomRight.setY(newTopLeftY + rectHeight);
     }
 
-    /*
-    @Override
-    public void setMiddle() {
-        Point newTopLeft = new Point(,);
-        Point newBottomRight = new Point(,);
-
-        topLeft = newTopLeft;
-        bottomRight = newBottomRight;
-        centerPoint.setX(Math.abs(getTopLeft().getX() - getBottomRight().getX())/2);
-        centerPoint.setY(Math.abs(getTopLeft().getY() - getBottomRight().getY())/2);
-    }
-     */
 }

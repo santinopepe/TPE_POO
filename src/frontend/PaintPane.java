@@ -4,6 +4,7 @@ import backend.CanvasState;
 import backend.EdgeType;
 import backend.ShadowType;
 import backend.model.*;
+import backend.LayerType;
 import frontend.DrawFigures.DrawEllipse;
 import frontend.DrawFigures.DrawFigure;
 import frontend.DrawFigures.DrawRect;
@@ -13,6 +14,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
@@ -63,6 +65,8 @@ PaintPane extends BorderPane {
 	//seleccionar un tipo de borde
 	private EdgeType edge;
 
+	private LayerType layer;
+
 	// StatusBar
 	private final StatusPane statusPane;
 
@@ -78,6 +82,7 @@ PaintPane extends BorderPane {
 
 	ChoiceBox<ShadowType> shadowsBox = new ChoiceBox<>();
 	ChoiceBox<EdgeType> edgeBox = new ChoiceBox<>();
+	ChoiceBox<LayerType> layerBox = new ChoiceBox<>();
 
 	public PaintPane(CanvasState canvasState, StatusPane statusPane) {
 		this.canvasState = canvasState;
@@ -85,24 +90,20 @@ PaintPane extends BorderPane {
 
 		ChoiceBox<ShadowType> shadowsBox = new ChoiceBox<>();
 		ChoiceBox<EdgeType> edgeBox = new ChoiceBox<>();
+		ChoiceBox<LayerType> layerBox = new ChoiceBox<>();
 		Label shadowLable = new Label("Sombras");
 		Label borderLable = new Label("Borde");
 		Label fillingLable = new Label("Relleno");
 		Label actionLable = new Label("Acciones");
 		shadowsBox.getItems().addAll(ShadowType.NONE, ShadowType.SIMPLE, ShadowType.COLOURED, ShadowType.SIMPLE_INVERSED, ShadowType.COLOURED_INVERSED);
 		edgeBox.getItems().addAll(EdgeType.NORMAL,EdgeType.SIMPLE_DOTTED, EdgeType.COMPLEX_DOTTED);
+		layerBox.getItems().addAll(LayerType.CAPA1,LayerType.CAPA2, LayerType.CAPA3, LayerType.CAPA4);
 
 		shadowsBox.setValue(ShadowType.NONE);
 		shadowsBox.setOnAction(event -> {
 			shadow = shadowsBox.getValue();
 		});
 
-		moveButton.setOnAction(event -> {
-			if (selectedFigure != null) {
-				selectedFigure.centerFigure(canvas.getWidth(), canvas.getHeight());
-				redrawCanvas();
-			}
-		});
 
 		edgeBox.setValue(EdgeType.NORMAL);
 		edgeBox.setOnAction(event -> {
@@ -113,6 +114,11 @@ PaintPane extends BorderPane {
 		borderSlider.setMax(10);
 		borderSlider.setValue(5); // Valor inicial
 		borderSlider.setShowTickLabels(true);
+
+		layerBox.setValue(LayerType.CAPA1);
+		layerBox.setOnAction(event -> {
+			layer = layerBox.getValue();
+		});
 
 		ToggleButton[] toolsArr = {selectionButton, rectangleButton, circleButton, squareButton, ellipseButton, deleteButton};
 		ToggleGroup tools = new ToggleGroup();
@@ -133,7 +139,7 @@ PaintPane extends BorderPane {
 				new  Ellipse(new Point(0,0),1,1)));
 
 
-
+		//todo lo de la barra vertical
 		for (ToggleButton tool : toolsArr) {
 			tool.setMinWidth(90);
 			tool.setToggleGroup(tools);
@@ -165,6 +171,15 @@ PaintPane extends BorderPane {
 		buttonsBox.setStyle("-fx-background-color: #999");
 		buttonsBox.setPrefWidth(100);
 		gc.setLineWidth(1);
+
+		//Barra Horizontal
+		HBox horizontalBox = new HBox(10);
+		horizontalBox.getChildren().add(layerBox);
+
+		horizontalBox.setPadding(new Insets(4));
+		horizontalBox.setStyle("-fx-background-color: #999");
+		horizontalBox.setPrefHeight(50);
+		setTop(horizontalBox);
 
 		canvas.setOnMousePressed(event -> {
 			startPoint = new Point(event.getX(), event.getY());
@@ -239,7 +254,39 @@ PaintPane extends BorderPane {
 							drawFigure.createDrawfigure(gc,figureProperties,figure).drawFigure();
 							redrawCanvas();
 						}
+						if(moveButton.isSelected()){
+							if (selectedFigure != null) {
+								selectedFigure.centerFigure(canvas.getWidth(), canvas.getHeight());
+								redrawCanvas();
+							}
+						}
+						if(divideButton.isSelected()) {
 
+							double midX = (figure.getPoint1().getX() + figure.getPoint2().getX())/2;
+
+							//Dividimos por 3.93 debido a que nos queda de la mejor manera con esa cuenta
+							Figure figureLeft = figure.createDividedFigure(figure.getPoint1(), new Point(midX, figure.getPoint2().getY()),
+									new Point(figure.getPoint1().getX()-figure.getAxis1()/3.93, figure.getPoint1().getY()), figure.getAxis1()/2,figure.getAxis2()/2);
+							Figure figureRight = figure.createDividedFigure(new Point(midX, figure.getPoint1().getY()),figure.getPoint2(),
+									new Point(figure.getPoint1().getX()+figure.getAxis1()/3.93, figure.getPoint1().getY()),figure.getAxis1()/2,figure.getAxis2()/2);
+
+
+							canvasState.add(figureLeft);
+							canvasState.add(figureRight);
+							canvasState.remove(figure);
+
+							DrawFigure drawFigureLeft = drawFigureMap.get(figureLeft.getClass());
+							drawFigureLeft.createDrawfigure(gc,figureProperties,figureLeft).drawFigure();
+
+							DrawFigure drawFigureRight = drawFigureMap.get(figureRight.getClass());
+							drawFigureRight.createDrawfigure(gc,figureProperties,figureRight).drawFigure();
+
+							figurePropertiesMap.put(figureLeft, figureProperties);
+							figurePropertiesMap.put(figureRight, figureProperties);
+
+							redrawCanvas();
+
+						}
 					}
 
 				}

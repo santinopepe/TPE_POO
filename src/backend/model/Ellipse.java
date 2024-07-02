@@ -90,15 +90,15 @@ public class Ellipse implements Figure {
     public double getAxis2() {
         return sMinorAxis;
     }
-    /*
-    @Override
-    public void setMiddle() {
-        getCenterPoint().setX(400);
-        getCenterPoint().setY(300);
-    }*/
 
     @Override
-    public Figure createNewFigure(Point point1, Point ponit2, double axis1, double axis2, double size) {
+    public Figure createDividedFigure(Point point1, Point point2, Point centerP, double axis1, double axis2) {
+        return new Ellipse(centerP,axis1,axis2);
+    }
+
+
+    @Override
+    public Figure createNewFigure(Point point1, Point point2, double axis1, double axis2, double size) {
         return new Ellipse(point1, axis1, axis2);
     }
 
