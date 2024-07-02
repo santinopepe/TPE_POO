@@ -38,6 +38,9 @@ PaintPane extends BorderPane {
 	private final ToggleButton squareButton = new ToggleButton("Cuadrado");
 	private final ToggleButton ellipseButton = new ToggleButton("Elipse");
 	private final ToggleButton deleteButton = new ToggleButton("Borrar");
+	private final ToggleButton duplicateButton = new ToggleButton("Duplicar");
+	private final ToggleButton divideButton = new ToggleButton("Dividir");
+	private final ToggleButton moveButton = new ToggleButton("Mov. Centro");
 
 	// Selector de color de relleno
 	private final ColorPicker fillColorPicker = new ColorPicker(defaultFillColor);
@@ -85,12 +88,20 @@ PaintPane extends BorderPane {
 		Label shadowLable = new Label("Sombras");
 		Label borderLable = new Label("Borde");
 		Label fillingLable = new Label("Relleno");
+		Label actionLable = new Label("Acciones");
 		shadowsBox.getItems().addAll(ShadowType.NONE, ShadowType.SIMPLE, ShadowType.COLOURED, ShadowType.SIMPLE_INVERSED, ShadowType.COLOURED_INVERSED);
 		edgeBox.getItems().addAll(EdgeType.NORMAL,EdgeType.SIMPLE_DOTTED, EdgeType.COMPLEX_DOTTED);
 
 		shadowsBox.setValue(ShadowType.NONE);
 		shadowsBox.setOnAction(event -> {
 			shadow = shadowsBox.getValue();
+		});
+
+		moveButton.setOnAction(event -> {
+			if (selectedFigure != null) {
+				selectedFigure.centerFigure(canvas.getWidth(), canvas.getHeight());
+				redrawCanvas();
+			}
 		});
 
 		edgeBox.setValue(EdgeType.NORMAL);
@@ -138,6 +149,18 @@ PaintPane extends BorderPane {
 		buttonsBox.getChildren().add(borderLable);
 		buttonsBox.getChildren().add(edgeBox);
 		buttonsBox.getChildren().add(borderSlider);
+
+		buttonsBox.getChildren().add(actionLable);
+
+		ToggleButton[] actionsArray = {duplicateButton, divideButton, moveButton};
+		ToggleGroup arrTools = new ToggleGroup();
+		for (ToggleButton tool : actionsArray) {
+			tool.setMinWidth(90);
+			tool.setToggleGroup(arrTools);
+			tool.setCursor(Cursor.HAND);
+		}
+		buttonsBox.getChildren().addAll(actionsArray);
+
 		buttonsBox.setPadding(new Insets(5));
 		buttonsBox.setStyle("-fx-background-color: #999");
 		buttonsBox.setPrefWidth(100);
@@ -203,6 +226,20 @@ PaintPane extends BorderPane {
 						FigureProperties figureProperties = new FigureProperties(fillColorPicker.getValue(), shadowsBox.getValue(),
 								fillSecondaryColorPicker.getValue(), edgeBox.getValue(), borderSlider.getValue());
 						figurePropertiesMap.replace(figure,figureProperties);
+
+						if (duplicateButton.isSelected()){
+							//ES MUY FEO VER SI SE PUEDE CAMBIAR. !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+							Figure duplicateFigure = figure.createNewFigure(figure.getPoint1().displacePoint(),figure.getPoint2().displacePoint()
+									,figure.getAxis1(), figure.getAxis2(), figure.getAxis1());
+
+							figurePropertiesMap.put(duplicateFigure, figureProperties);
+							canvasState.add(duplicateFigure);
+
+							DrawFigure drawFigure = drawFigureMap.get(figure.getClass());
+							drawFigure.createDrawfigure(gc,figureProperties,figure).drawFigure();
+							redrawCanvas();
+						}
+
 					}
 
 				}

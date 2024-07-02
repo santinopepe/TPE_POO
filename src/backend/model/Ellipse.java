@@ -22,6 +22,7 @@ public class Ellipse implements Figure {
         return centerPoint;
     }
 
+
     public double getsMayorAxis() {
         return sMayorAxis;
     }
@@ -71,7 +72,39 @@ public class Ellipse implements Figure {
     }
 
     @Override
+    public Point getPoint1() {
+        return getCenterPoint();
+    }
+
+    @Override
+    public Point getPoint2() {
+        return getCenterPoint();
+    }
+
+    @Override
+    public double getAxis1() {
+        return sMayorAxis;
+    }
+
+    @Override
+    public double getAxis2() {
+        return sMinorAxis;
+    }
+    /*
+    @Override
+    public void setMiddle() {
+        getCenterPoint().setX(400);
+        getCenterPoint().setY(300);
+    }*/
+
+    @Override
     public Figure createNewFigure(Point point1, Point ponit2, double axis1, double axis2, double size) {
         return new Ellipse(point1, axis1, axis2);
+    }
+
+    @Override
+    public void centerFigure(double canvasWidth, double canvasHeight) {
+        centerPoint.setX(canvasWidth / 2);
+        centerPoint.setY(canvasHeight / 2);
     }
 }

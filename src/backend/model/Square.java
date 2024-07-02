@@ -1,9 +1,11 @@
 package backend.model;
 
 public class Square extends Rectangle {
+    private double size;
 
     public Square(Point topLeft, double size) {
         super(topLeft, new Point(topLeft.getX() + size, topLeft.getY() + size));
+        this.size = size;
 
     }
 
@@ -14,5 +16,10 @@ public class Square extends Rectangle {
     @Override
     public String toString() {
         return String.format("Cuadrado [ %s , %s ]", getTopLeft(), getBottomRight());
+    }
+
+    @Override
+    public double getAxis1() {
+        return size;
     }
 }

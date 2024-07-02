@@ -25,9 +25,21 @@ public class Point {
         this.y += diff;
     }
 
+    public void setX(double x) {
+        this.x = x;
+    }
+
+    public void setY(double y) {
+        this.y = y;
+    }
+
     @Override
     public String toString() {
         return String.format("{%.2f , %.2f}", x, y);
     }
 
+
+    public Point displacePoint() {
+        return new Point(getX() + 10, getY() + 10);
+    }
 }

@@ -4,7 +4,7 @@ import java.util.Objects;
 
 public class Rectangle implements Figure {
 
-    private final Point topLeft, bottomRight;
+    private Point topLeft, bottomRight;
 
     public Rectangle(Point topLeft, Point bottomRight) {
         this.topLeft = topLeft;
@@ -69,4 +69,49 @@ public class Rectangle implements Figure {
         return Objects.hash(topLeft, bottomRight);
     }
 
+    @Override
+    public Point getPoint1() {
+        return getTopLeft();
+    }
+
+    @Override
+    public Point getPoint2() {
+        return getBottomRight();
+    }
+
+    @Override
+    public double getAxis1() {
+        return 0;
+    }
+
+    @Override
+    public double getAxis2() {
+        return 0;
+    }
+
+    @Override
+    public void centerFigure(double canvasWidth, double canvasHeight) {
+        double rectWidth = Math.abs(topLeft.getX() - bottomRight.getX());
+        double rectHeight = Math.abs(topLeft.getY() - bottomRight.getY());
+        double newTopLeftX = (canvasWidth - rectWidth) / 2;
+        double newTopLeftY = (canvasHeight - rectHeight) / 2;
+
+        topLeft.setX(newTopLeftX);
+        topLeft.setY(newTopLeftY);
+        bottomRight.setX(newTopLeftX + rectWidth);
+        bottomRight.setY(newTopLeftY + rectHeight);
+    }
+
+    /*
+    @Override
+    public void setMiddle() {
+        Point newTopLeft = new Point(,);
+        Point newBottomRight = new Point(,);
+
+        topLeft = newTopLeft;
+        bottomRight = newBottomRight;
+        centerPoint.setX(Math.abs(getTopLeft().getX() - getBottomRight().getX())/2);
+        centerPoint.setY(Math.abs(getTopLeft().getY() - getBottomRight().getY())/2);
+    }
+     */
 }
