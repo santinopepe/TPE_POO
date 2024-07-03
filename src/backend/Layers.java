@@ -16,8 +16,9 @@ public class Layers{
     }
 
     public int getLayerNum(){
-        return LAYER_NUM++;
+        return LAYER_NUM;
     }
+
     public void addLayer(){
         layers.add(new Layer(LAYER_NUM++));
     }

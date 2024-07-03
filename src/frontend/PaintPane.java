@@ -104,6 +104,7 @@ public class PaintPane extends BorderPane {
 		Label actionLable = new Label("Acciones");
 		shadowsBox.getItems().addAll(ShadowType.NONE, ShadowType.SIMPLE, ShadowType.COLOURED, ShadowType.SIMPLE_INVERSED, ShadowType.COLOURED_INVERSED);
 		edgeBox.getItems().addAll(EdgeType.NORMAL,EdgeType.SIMPLE_DOTTED, EdgeType.COMPLEX_DOTTED);
+		
 
 		layers.addLayer();
 		layers.addLayer();
@@ -112,21 +113,104 @@ public class PaintPane extends BorderPane {
 			layer.cannotEliminate();
 			layerBox.getItems().add(layer);
 		}
-		layer = layers.getLayers().getFirst();
-		layerBox.setValue(layers.getLayers().getFirst());
+		if (!layers.getLayers().isEmpty()) {
+			layer = layers.getLayers().getFirst();
+			layerBox.setValue(layer);
+		}
 		layerBox.setOnAction(event -> {
 			layer = layerBox.getValue();
+			System.out.println(layer.getLayerNum());
+		});
+		
+		moveButton.setOnAction(event -> {
+			if (moveButton.isSelected()){
+				if (selectedFigure != null) {
+					selectedFigure.centerFigure(canvas.getWidth(), canvas.getHeight());
+					redrawCanvas();
+				}
+			}
 		});
 
-		shadowsBox.setValue(ShadowType.NONE);
-		shadowsBox.setOnAction(event -> {
-			shadow = shadowsBox.getValue();
+		divideButton.setOnAction(event -> {
+			if (selectedFigure != null) {
+				double midX = (selectedFigure.getPoint1().getX() + selectedFigure.getPoint2().getX()) / 2;
+
+				Figure figureLeft = selectedFigure.createDividedFigure(
+						selectedFigure.getPoint1(),
+						new Point(midX, selectedFigure.getPoint2().getY()),
+						new Point(selectedFigure.getPoint1().getX() - selectedFigure.getAxis1() / 3.93, selectedFigure.getPoint1().getY()),
+						selectedFigure.getAxis1() / 2,
+						selectedFigure.getAxis2() / 2
+				);
+
+				Figure figureRight = selectedFigure.createDividedFigure(
+						new Point(midX, selectedFigure.getPoint1().getY()),
+						selectedFigure.getPoint2(),
+						new Point(selectedFigure.getPoint1().getX() + selectedFigure.getAxis1() / 3.93, selectedFigure.getPoint1().getY()),
+						selectedFigure.getAxis1() / 2,
+						selectedFigure.getAxis2() / 2
+				);
+
+				layers.getLayers().get(layer.getLayerNum()).add(figureLeft);
+				layers.getLayers().get(layer.getLayerNum()).add(figureRight);
+				layers.getLayers().get(layer.getLayerNum()).remove(selectedFigure);
+
+				FigureProperties figureProperties = figurePropertiesMap.get(selectedFigure);
+				figurePropertiesMap.put(figureLeft, figureProperties);
+				figurePropertiesMap.put(figureRight, figureProperties);
+
+				redrawCanvas();
+			}
 		});
 
 
-		edgeBox.setValue(EdgeType.NORMAL);
-		edgeBox.setOnAction(event -> {
-			edge = edgeBox.getValue();
+		showLayer.setOnAction(event -> {
+			if (layer != null) {
+				layer.unHide();
+				redrawCanvas();
+			}
+		});
+
+		hideLayer.setOnAction(event -> {
+			if (layer != null) {
+				layer.hide();
+				redrawCanvas();
+			}
+		});
+
+		deleteButton.setOnAction(event -> {
+			if (selectedFigure != null) {
+				layers.getLayers().get(layer.getLayerNum()).remove(selectedFigure);
+				selectedFigure = null;
+				redrawCanvas();
+			}
+		});
+
+		addLayer.setOnAction(event -> {
+			int num = layers.getLayerNum();
+			Layer newLayer = new Layer(num);
+			layerBox.getItems().add(newLayer);
+			layers.addLayer();
+		});
+
+		removeLayer.setOnAction(event -> {
+			if (layerBox.getValue() != null) {
+				Layer selectedLayer = layerBox.getValue();
+				if (selectedLayer.getEliminate()) {
+					layerBox.getItems().remove(selectedLayer);
+					layers.getLayers().remove(selectedLayer);
+				}
+			}
+		});
+
+		selectionButton.setOnAction(event -> {
+			Figure figure = null;
+			if(selectedFigure != null){
+				figure = selectedFigure;
+				FigureProperties figureProperties = new FigureProperties(fillColorPicker.getValue(), shadowsBox.getValue(),
+						fillSecondaryColorPicker.getValue(), edgeBox.getValue(), borderSlider.getValue());
+				figurePropertiesMap.replace(figure, figureProperties);
+			}
 		});
 
 		borderSlider.setMin(0);
@@ -264,11 +348,7 @@ public class PaintPane extends BorderPane {
 						found = true;
 						selectedFigure = figure;
 						label.append(figure);
-
-						FigureProperties figureProperties = new FigureProperties(fillColorPicker.getValue(), shadowsBox.getValue(),
-								fillSecondaryColorPicker.getValue(), edgeBox.getValue(), borderSlider.getValue());
-						figurePropertiesMap.replace(figure, figureProperties);
-
+						/*
 						if (duplicateButton.isSelected()) {
 							//ES MUY FEO, VER SI SE PUEDE CAMBIAR. !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 							Figure duplicateFigure = figure.createNewFigure(figure.getPoint1().displacePoint(), figure.getPoint2().displacePoint()
@@ -282,12 +362,14 @@ public class PaintPane extends BorderPane {
 							drawFigure.createDrawfigure(gc, figureProperties, figure).drawFigure();
 							redrawCanvas();
 						}
-						if (moveButton.isSelected()) {
+
+						if (moveButton.isSelected()){
 							if (selectedFigure != null) {
 								selectedFigure.centerFigure(canvas.getWidth(), canvas.getHeight());
 								redrawCanvas();
 							}
 						}
+
 						if (divideButton.isSelected()) {
 
 							double midX = (figure.getPoint1().getX() + figure.getPoint2().getX()) / 2;
@@ -301,12 +383,13 @@ public class PaintPane extends BorderPane {
 							layers.getLayers().get(layer.getLayerNum()).add(figureLeft);
 							layers.getLayers().get(layer.getLayerNum()).add(figureRight);
 							layers.getLayers().get(layer.getLayerNum()).remove(figure);
-
+*/
 								/*
 								canvasState.add(figureLeft);
 								canvasState.add(figureRight);
 								canvasState.remove(figure);
 								 */
+						/*
 
 							DrawFigure drawFigureLeft = drawFigureMap.get(figureLeft.getClass());
 							drawFigureLeft.createDrawfigure(gc, figureProperties, figureLeft).drawFigure();
@@ -319,10 +402,10 @@ public class PaintPane extends BorderPane {
 
 							redrawCanvas();
 						}
+
+						 */
 					}
 				}
-
-
 				if (found) {
 					statusPane.updateStatus(label.toString());
 				} else {
@@ -331,6 +414,7 @@ public class PaintPane extends BorderPane {
 				}
 				redrawCanvas();
 			}
+			/*
 			if(addLayer.isSelected()){
 				int num=layers.getLayerNum();
 				layerBox.getItems().add(new Layer(num));
@@ -342,6 +426,8 @@ public class PaintPane extends BorderPane {
 				}
 				redrawCanvas();
 			}
+			*/
+
 		});
 
 		canvas.setOnMouseDragged(event -> {
@@ -389,5 +475,7 @@ public class PaintPane extends BorderPane {
 			}
 		}
 	}
+
+
 }
 
