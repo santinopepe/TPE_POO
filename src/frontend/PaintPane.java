@@ -205,9 +205,12 @@ public class PaintPane extends BorderPane {
 		layerBox.getItems().add(layerFigureMap.get(2));
 
 		addLayer.setOnAction(event -> {
-			layerFigureMap.put(cantLayer,new Layer(cantLayer++));
-			layerBox.getItems().add(layerFigureMap.get(cantLayer-1));
-			System.out.println(currentLayer);
+			if(addLayer.isSelected()){
+				layerFigureMap.put(cantLayer,new Layer(cantLayer++));
+				layerBox.getItems().add(layerFigureMap.get(cantLayer-1));
+				currentLayer = layerFigureMap.get(cantLayer-1);
+				System.out.println(currentLayer);
+			}
 		});
 
 		moveButton.setOnAction(event -> {
@@ -274,9 +277,12 @@ public class PaintPane extends BorderPane {
 
 
 		removeLayer.setOnAction(event -> {
-			layerFigureMap.remove(currentLayer.getLayerNum());
-			//Fijarse como sacar del choice box;
-			layers.getLayers().remove(currentLayer.getLayerNum());
+			if(currentLayer.getCanEliminate() && removeLayer.isSelected()) {
+				layerFigureMap.remove(currentLayer.getLayerNum());
+				int size = layerBox.getItems().size();
+				layerBox.getItems().remove(size - 1);
+				currentLayer = layerFigureMap.get(size-1);
+			}
 		});
 
 		selectionButton.setOnAction(event -> {

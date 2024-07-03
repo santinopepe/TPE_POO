@@ -28,7 +28,7 @@ public class Layer extends ArrayList<Figure> {
         canEliminate = false;
     }
 
-    public boolean getEliminate(){
+    public boolean getCanEliminate(){
         return canEliminate;
     }
 
