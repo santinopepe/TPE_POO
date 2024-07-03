@@ -2,7 +2,7 @@ package backend.model;
 
 import java.util.Objects;
 
-public class Rectangle implements Figure {
+public class Rectangle implements Figure{
 
     private Point topLeft, bottomRight;
 

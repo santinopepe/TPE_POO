@@ -2,7 +2,7 @@ package backend.model;
 
 import java.util.Objects;
 
-public class Ellipse implements Figure {
+public class Ellipse implements Figure{
 
     private final Point centerPoint;
     private final double sMayorAxis, sMinorAxis;

@@ -10,6 +10,7 @@ import javafx.scene.paint.Stop;
 
 
 public abstract class DrawFigure{
+
     private GraphicsContext gc;
     private final FigureProperties figureProperties;
     private final Figure figure;
@@ -58,6 +59,7 @@ public abstract class DrawFigure{
     }
 
     public abstract void drawFigure();
+
     public abstract DrawFigure createDrawfigure(GraphicsContext gc, FigureProperties fProperties, Figure figure);
 
     public boolean areEqual(){
@@ -67,9 +69,11 @@ public abstract class DrawFigure{
     public GraphicsContext getGc() {
         return gc;
     }
+
     public Figure getFigure(){
         return figure;
     }
+
     public FigureProperties getFigureProperties(){
         return figureProperties;
     }
