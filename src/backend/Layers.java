@@ -1,7 +1,6 @@
 package backend;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class Layers{
@@ -20,7 +19,9 @@ public class Layers{
     }
 
     public void addLayer(){
-        layers.add(new Layer(LAYER_NUM++));
+        Layer layer =new Layer(LAYER_NUM++);
+        layers.add(layer);
+        System.out.println("addLayer %s".formatted(layer));
     }
 
 }

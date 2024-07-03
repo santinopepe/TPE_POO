@@ -3,16 +3,17 @@ package backend;
 import backend.model.Figure;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 //Cambiamos CanvasState por layer.
-public class Layer extends ArrayList<Figure> implements List<Figure>{
+public class Layer extends ArrayList<Figure> {
     private final int layerNum;
     private boolean isHidden = false;
     private boolean canEliminate = true;
 
     public Layer(int layerNum) {
-        this.layerNum = layerNum-1;
+        this.layerNum = layerNum;
     }
 
     public void hide(){
@@ -46,4 +47,18 @@ public class Layer extends ArrayList<Figure> implements List<Figure>{
     public String toString() {
         return "Capa %d".formatted(layerNum+1);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Layer)) return false;
+        return layerNum == ((Layer) o).layerNum;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(layerNum);
+    }
+
+
 }
