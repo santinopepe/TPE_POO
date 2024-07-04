@@ -11,21 +11,17 @@ import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import backend.Layer;
-
-import javax.swing.*;
 import java.util.*;
 
 
-
-//OCULTAR ESTA FALLANDO, OCULTA TODO.
 //OTRO PROBLEMA ES QUE CUANDO DUPLICO LE AGREGA LAS CARATERISTICAS AL DUPLICADO Y AL OTRO,
 //LO MISMO CUANDO DIVIDO.
+//SALTA ERROR CUANDO DESOPRIMO EL BORRAR CAPA
 
 public class PaintPane extends BorderPane {
 
@@ -326,6 +322,7 @@ public class PaintPane extends BorderPane {
 
 		hideLayer.setOnAction(event -> {
 			layerFigureMap.get(layerBox.getValue().getLayerNum()).hide();
+			System.out.printf("%d", layerBox.getValue().getLayerNum());
 			redrawCanvas();
 		});
 
@@ -459,7 +456,8 @@ public class PaintPane extends BorderPane {
 				statusPane.updateStatus(eventPoint.toString());
 			}
 		});
-//CAMBIAR ESTO DESPUES HACER VARIOS SET ON MOUSE CLICKED.
+
+		//CAMBIAR ESTO DESPUES HACER VARIOS SET ON MOUSE CLICKED.
 		canvas.setOnMouseClicked(event -> {
 			if(selectionButton.isSelected()) {
 				Point eventPoint = new Point(event.getX(), event.getY());
@@ -577,8 +575,8 @@ public class PaintPane extends BorderPane {
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		//Podemos hacer un metodo getLayerFigures y devuelve las figuras del layer.
 		for (Layer layer : layerFigureMap.values()) {
-			for (Figure figure : layer.figures()) {
-				if (!currentLayer.getIsHidden()) {
+			if (!layer.getIsHidden()) {
+				for (Figure figure : layer.figures()) {
 					if (figure.equals(selectedFigure)) {
 						gc.setStroke(Color.RED);
 					} else {
