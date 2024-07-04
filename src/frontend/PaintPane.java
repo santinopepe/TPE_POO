@@ -21,10 +21,7 @@ import java.util.*;
 
 public class PaintPane extends BorderPane {
 
-	// BackEnd
-	private final Layers canvasState;
-
-	// Canvas y relacionados
+    // Canvas y relacionados
 	private final Canvas canvas = new Canvas(800, 600);
 	private final GraphicsContext gc = canvas.getGraphicsContext2D();
 	private final Color lineColor = Color.BLACK;
@@ -68,11 +65,6 @@ public class PaintPane extends BorderPane {
 	//seleccionar un tipo de borde
 	private EdgeType edge = EdgeType.NORMAL;
 
-	private final Layers layers = new Layers();
-
-	// StatusBar
-	private final StatusPane statusPane;
-
 	private int cantLayer=0;
 	// Colores de relleno de cada figura
 
@@ -86,9 +78,6 @@ public class PaintPane extends BorderPane {
 
 	
 	public PaintPane(Layers canvasState, StatusPane statusPane) {
-
-		this.canvasState = canvasState;
-		this.statusPane = statusPane;
 
 		ChoiceBox<ShadowType> shadowsBox = new ChoiceBox<>();
 		ChoiceBox<EdgeType> edgeBox = new ChoiceBox<>();
@@ -161,6 +150,8 @@ public class PaintPane extends BorderPane {
 		ToggleGroup arrLayers = new ToggleGroup();
 		setButtons(layersArr,arrLayers);
 
+		//Seteamos que inicialmente el boton de mostrar capa este seleccionado.
+		showLayer.fire();
 
 		buttonsBox.setPadding(new Insets(5));
 		buttonsBox.setStyle("-fx-background-color: #999");
@@ -333,19 +324,24 @@ public class PaintPane extends BorderPane {
 
 
 		removeLayer.setOnAction(event -> {
-			if(currentLayer.getCanEliminate() && removeLayer.isSelected()) {
-				layerFigureMap.remove(currentLayer.getLayerNum());
-				int size = layerBox.getItems().size();
-				layerBox.getItems().remove(currentLayer);
-				currentLayer = layerFigureMap.get(size-1);
-				//Agregue esto porque cuando eliminabamos aparecia en choicebox como si
-				//estuviesemos en la capa q eliminamos.
-				layerBox.setValue(layerFigureMap.get(0));
+			try {
+				if (currentLayer.getCanEliminate() && removeLayer.isSelected()) {
+					layerFigureMap.remove(currentLayer.getLayerNum());
+					int size = layerBox.getItems().size();
+					layerBox.getItems().remove(currentLayer);
+					currentLayer = layerFigureMap.get(size - 1);
+
+					//Agregue esto porque cuando eliminabamos aparecia en choicebox como si
+					//estuviesemos en la capa q eliminamos.
+					layerBox.setValue(layerFigureMap.get(0));
+				}
+			}catch (Exception ex){
+				System.out.println("La capa no existe");
 			}
 		});
 
 		duplicateButton.setOnAction(event -> {
-			Figure figure = null;
+			Figure figure;
 			if(selectedFigure != null && duplicateButton.isSelected()){
 				figure = selectedFigure;
 				FigureProperties figureProperties = figurePropertiesMap.get(selectedFigure);
@@ -372,9 +368,7 @@ public class PaintPane extends BorderPane {
 
 
 
-		canvas.setOnMousePressed(event -> {
-			startPoint = new Point(event.getX(), event.getY());
-		});
+		canvas.setOnMousePressed(event -> startPoint = new Point(event.getX(), event.getY()));
 
 		canvas.setOnMouseReleased(event -> {
 			Point endPoint = new Point(event.getX(), event.getY());
@@ -423,7 +417,6 @@ public class PaintPane extends BorderPane {
 			}
 		});
 
-		//CAMBIAR ESTO DESPUES HACER VARIOS SET ON MOUSE CLICKED.
 		canvas.setOnMouseClicked(event -> {
 			if(selectionButton.isSelected()) {
 				Point eventPoint = new Point(event.getX(), event.getY());
@@ -472,7 +465,6 @@ public class PaintPane extends BorderPane {
 
 	private void redrawCanvas() {
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-		//Podemos hacer un metodo getLayerFigures y devuelve las figuras del layer.
 		for (Layer layer : layerFigureMap.values()) {
 			if (!layer.getIsHidden()) {
 				for (Figure figure : layer.figures()) {
