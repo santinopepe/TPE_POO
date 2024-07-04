@@ -278,7 +278,7 @@ public class PaintPane extends BorderPane {
 
 		//CHEQUEAR DIVIDE, DIVIDE MAL NO REDUCE A LA MITAD EL ALTO.
 		divideButton.setOnAction(event -> {
-			if (selectedFigure != null) {
+			if (selectedFigure != null && divideButton.isSelected()) {
 				double midX = (selectedFigure.getPoint1().getX() + selectedFigure.getPoint2().getX()) / 2;
 
 				Figure figureLeft = selectedFigure.createDividedFigure(
@@ -386,7 +386,7 @@ public class PaintPane extends BorderPane {
 
 		duplicateButton.setOnAction(event -> {
 			Figure figure = null;
-			if(selectedFigure != null){
+			if(selectedFigure != null && duplicateButton.isSelected()){
 				figure = selectedFigure;
 				FigureProperties figureProperties = figurePropertiesMap.get(selectedFigure);
 				//ES MUY FEO, VER SI SE PUEDE CAMBIAR. !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
