@@ -6,8 +6,14 @@ public enum EdgeType {
 
     NORMAL(){
         @Override
-        public void getBorder(GraphicsContext gc) {
-            gc.setLineDashes(0);
+        public Double[] getBorder() {
+            Double[] arr = new Double[5];
+            arr[0] = 0.0;
+            arr[1] = 0.0;
+            arr[2] = 0.0;
+            arr[3] = 0.0;
+            arr[4] = 0.0;
+            return arr;
         }
 
         @Override
@@ -17,8 +23,14 @@ public enum EdgeType {
     },
     SIMPLE_DOTTED(){
         @Override
-        public void getBorder(GraphicsContext gc) {
-            gc.setLineDashes(10);
+        public Double[] getBorder() {
+            Double[] arr = new Double[5];
+            arr[0] = 10.0;
+            arr[1] = 0.0;
+            arr[2] = 0.0;
+            arr[3] = 0.0;
+            arr[4] = 0.0;
+            return arr;
         }
 
         @Override
@@ -28,8 +40,14 @@ public enum EdgeType {
     },
     COMPLEX_DOTTED(){
         @Override
-        public void getBorder(GraphicsContext gc) {
-            gc.setLineDashes(30, 10, 15, 10);
+        public Double[] getBorder() {
+            Double[] arr = new Double[5];
+            arr[0] = 30.0;
+            arr[1] = 10.0;
+            arr[2] = 15.0;
+            arr[3] = 10.0;
+            arr[4] = 0.0;
+            return arr;
         }
 
         @Override
@@ -38,5 +56,5 @@ public enum EdgeType {
         }
     };
 
-    public abstract void getBorder(GraphicsContext gc);
+    public abstract Double[] getBorder();
 }
