@@ -15,9 +15,5 @@ public class Circle extends Ellipse {
         return new Circle(point1, axis1);
     }
 
-    public double getRadius()    {
-        return getsMayorAxis();
-    }
-
 
 }

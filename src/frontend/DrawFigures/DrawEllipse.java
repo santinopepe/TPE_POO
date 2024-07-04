@@ -13,7 +13,6 @@ public class DrawEllipse extends DrawFigure{
 
     }
 
-    //Es necesario el casteo?
     @Override
     public void drawFigure() {
         Ellipse ellipse = (Ellipse) getFigure();
@@ -37,12 +36,4 @@ public class DrawEllipse extends DrawFigure{
         return new DrawEllipse(gc,fProperties,figure);
     }
 
-
-/*
-    //Chequear si se le puede pasar menos paramentros.
-    @Override
-    public DrawFigure createFigure(Figure fig, FigureProperties prop) {
-        return new DrawEllipse(getGc(),prop,fig);
-    }
-*/
 }

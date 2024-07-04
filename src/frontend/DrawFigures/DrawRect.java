@@ -13,7 +13,7 @@ public class DrawRect extends DrawFigure{
         super(gc, figureProperties, figure);
     }
 
-    //Es necesario el casteo?
+
     @Override
     public void drawFigure() {
         Rectangle rectangle = (Rectangle) getFigure();
@@ -38,13 +38,5 @@ public class DrawRect extends DrawFigure{
 
 
 
-/*
-    //Chequear si se le puede pasar menos paramentros.
-    @Override
-    public DrawFigure createDrawFigure(GraphicsContext gc, FigureProperties prop) {
-        return new DrawRect(getGc(),prop,this);
-    }
-
- */
 
 }

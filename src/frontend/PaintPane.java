@@ -19,10 +19,6 @@ import backend.Layer;
 import java.util.*;
 
 
-//OTRO PROBLEMA ES QUE CUANDO DUPLICO LE AGREGA LAS CARATERISTICAS AL DUPLICADO Y AL OTRO,
-//LO MISMO CUANDO DIVIDO.
-//SALTA ERROR CUANDO DESOPRIMO EL BORRAR CAPA
-
 public class PaintPane extends BorderPane {
 
 	// BackEnd
@@ -82,8 +78,6 @@ public class PaintPane extends BorderPane {
 
 	private final Map<Figure, FigureProperties> figurePropertiesMap = new HashMap<>();
 
-	private final Map<Figure, Color> figureColorMap = new HashMap<>();
-
 	private final Map<ToggleButton, Figure> figureButtonMap = new HashMap<>();
 
 	private final Map<Class<? extends Figure>, DrawFigure> drawFigureMap = new HashMap<>();
@@ -141,12 +135,9 @@ public class PaintPane extends BorderPane {
 
 
 		//Barra vertical
-		//hacer un metodo que haga esto
-		for (ToggleButton tool : toolsArr) {
-			tool.setMinWidth(90);
-			tool.setToggleGroup(tools);
-			tool.setCursor(Cursor.HAND);
-		}
+
+		setButtons(toolsArr,tools);
+
 		VBox buttonsBox = new VBox(10);
 		buttonsBox.getChildren().addAll(toolsArr);
 		buttonsBox.getChildren().add(shadowLable);
@@ -158,24 +149,18 @@ public class PaintPane extends BorderPane {
 		buttonsBox.getChildren().add(edgeBox);
 		buttonsBox.getChildren().add(borderSlider);
 		buttonsBox.getChildren().add(actionLable);
-		//hacer un metodo que haga esto
+
+
 		ToggleButton[] actionsArray = {duplicateButton, divideButton, moveButton};
 		ToggleGroup arrTools = new ToggleGroup();
-		for (ToggleButton tool : actionsArray) {
-			tool.setMinWidth(90);
-			tool.setToggleGroup(arrTools);
-			tool.setCursor(Cursor.HAND);
-		}
+		setButtons(actionsArray,arrTools);
+
 		buttonsBox.getChildren().addAll(actionsArray);
 
-		//hacer un metodo que haga esto
 		ToggleButton[] layersArr = {showLayer,hideLayer,addLayer,removeLayer};
 		ToggleGroup arrLayers = new ToggleGroup();
-		for(ToggleButton button : layersArr){
-			button.setMinWidth(90);
-			button.setToggleGroup(arrLayers);
-			button.setCursor(Cursor.HAND);
-		}
+		setButtons(layersArr,arrLayers);
+
 
 		buttonsBox.setPadding(new Insets(5));
 		buttonsBox.setStyle("-fx-background-color: #999");
@@ -218,6 +203,7 @@ public class PaintPane extends BorderPane {
 		fillSecondaryColorPicker.setOnAction(event -> {
 			if(selectedFigure != null && selectionButton.isSelected()) {
 				figurePropertiesMap.replace(selectedFigure, updateFigureProperties());
+				System.out.println(selectedFigure);
 				redrawCanvas();
 			}
 		});
@@ -272,37 +258,51 @@ public class PaintPane extends BorderPane {
 			}
 		});
 
-		//CHEQUEAR DIVIDE, DIVIDE MAL NO REDUCE A LA MITAD EL ALTO.
 		divideButton.setOnAction(event -> {
 			if (selectedFigure != null && divideButton.isSelected()) {
 				double midX = (selectedFigure.getPoint1().getX() + selectedFigure.getPoint2().getX()) / 2;
+				double midY = (selectedFigure.getPoint1().getY() + selectedFigure.getPoint2().getY()) / 2;
+				double diff = (selectedFigure.getPoint2().getY() - selectedFigure.getPoint1().getY()) / 4;
 
 				Figure figureLeft = selectedFigure.createDividedFigure(
-						selectedFigure.getPoint1(),
-						new Point(midX, selectedFigure.getPoint2().getY()),
+						new Point (selectedFigure.getPoint1().getX(),midY - diff),
+						new Point(midX, selectedFigure.getPoint2().getY() - diff),
 						new Point(selectedFigure.getPoint1().getX() - selectedFigure.getAxis1() / 3.93, selectedFigure.getPoint1().getY()),
 						selectedFigure.getAxis1() / 2,
 						selectedFigure.getAxis2() / 2
 				);
 
 				Figure figureRight = selectedFigure.createDividedFigure(
-						new Point(midX, selectedFigure.getPoint1().getY()),
-						selectedFigure.getPoint2(),
+						new Point(midX, midY - diff),
+						new Point (selectedFigure.getPoint2().getX(), midY + diff),
 						new Point(selectedFigure.getPoint1().getX() + selectedFigure.getAxis1() / 3.93, selectedFigure.getPoint1().getY()),
 						selectedFigure.getAxis1() / 2,
 						selectedFigure.getAxis2() / 2
 				);
 
+				FigureProperties figureProperties = figurePropertiesMap.get(selectedFigure);
+				FigureProperties leftProperties = new FigureProperties(
+						figureProperties.getColor(),
+						figureProperties.getShadowType(),
+						figureProperties.getSecondaryColor(),
+						figureProperties.getEdge(),
+						figureProperties.getWidth()
+				);
+				FigureProperties rightProperties = new FigureProperties(
+						figureProperties.getColor(),
+						figureProperties.getShadowType(),
+						figureProperties.getSecondaryColor(),
+						figureProperties.getEdge(),
+						figureProperties.getWidth()
+				);
+
+				figurePropertiesMap.put(figureLeft, leftProperties);
+				figurePropertiesMap.put(figureRight, rightProperties);
+
 				layerFigureMap.get(currentLayer.getLayerNum()).add(figureLeft);
 				layerFigureMap.get(currentLayer.getLayerNum()).add(figureRight);
 				layerFigureMap.get(currentLayer.getLayerNum()).remove(selectedFigure);
-
-				FigureProperties figureProperties = figurePropertiesMap.get(selectedFigure);
-
 				selectedFigure=null;
-				figurePropertiesMap.put(figureLeft, figureProperties);
-				figurePropertiesMap.put(figureRight, figureProperties);
-
 				redrawCanvas();
 			}
 		});
@@ -339,47 +339,13 @@ public class PaintPane extends BorderPane {
 			if(currentLayer.getCanEliminate() && removeLayer.isSelected()) {
 				layerFigureMap.remove(currentLayer.getLayerNum());
 				int size = layerBox.getItems().size();
-				layerBox.getItems().remove(size - 1);
+				layerBox.getItems().remove(currentLayer);
 				currentLayer = layerFigureMap.get(size-1);
 				//Agregue esto porque cuando eliminabamos aparecia en choicebox como si
 				//estuviesemos en la capa q eliminamos.
 				layerBox.setValue(layerFigureMap.get(0));
 			}
 		});
-
-
-
-/*
-		selectionButton.setOnAction(event -> {
-			if(selectionButton.isSelected()){
-				Figure figure = null;
-				if(selectedFigure != null){
-					figure = selectedFigure;
-					updateFigureProperties();
-					redrawCanvas();
-					/*
-					FigureProperties figureProperties = new FigureProperties(fillColorPicker.getValue(), shadowsBox.getValue(),
-							fillSecondaryColorPicker.getValue(), edgeBox.getValue(), borderSlider.getValue());
-					figurePropertiesMap.replace(figure, figureProperties);
-
-
-
-				}
-			}
-		});*/
-
-
-		/*
-		if(selectedFigure != null && selectionButton.isSelected()){
-			Figure figure = null;
-				figure = selectedFigure;
-				FigureProperties figureProperties = new FigureProperties(fillColorPicker.getValue(),
-				shadowsBox.getValue(),
-				fillSecondaryColorPicker.getValue(), edgeBox.getValue(), borderSlider.getValue());
-				figurePropertiesMap.replace(figure, figureProperties);
-			redrawCanvas();
-		}*/
-
 
 		duplicateButton.setOnAction(event -> {
 			Figure figure = null;
@@ -390,15 +356,19 @@ public class PaintPane extends BorderPane {
 				Figure duplicateFigure = figure.createNewFigure(figure.getPoint1().displacePoint(), figure.getPoint2().displacePoint()
 						, figure.getAxis1(), figure.getAxis2(), figure.getAxis1());
 
-				figurePropertiesMap.put(duplicateFigure, figureProperties);
+				FigureProperties dupProperties = new FigureProperties(
+						figureProperties.getColor(),
+						figureProperties.getShadowType(),
+						figureProperties.getSecondaryColor(),
+						figureProperties.getEdge(),
+						figureProperties.getWidth()
+				);
 
-
+				figurePropertiesMap.put(duplicateFigure, dupProperties);
 				layerFigureMap.get(currentLayer.getLayerNum()).add(duplicateFigure);
-
-				//canvasState.add(duplicateFigure);
-
 				DrawFigure drawFigure = drawFigureMap.get(figure.getClass());
-				drawFigure.createDrawfigure(gc, figureProperties, figure).drawFigure();
+				drawFigure.createDrawfigure(gc, dupProperties, figure).drawFigure();
+
 				redrawCanvas();
 			}
 		});
@@ -425,7 +395,6 @@ public class PaintPane extends BorderPane {
 				}
 			}
 			if (newFigure != null) {
-				//figureColorMap.put(newFigure,fillColorPicker.getValue());
 				figurePropertiesMap.put(newFigure, new FigureProperties(fillColorPicker.getValue(),
 						shadowsBox.getValue(),
 						fillSecondaryColorPicker.getValue(),
@@ -468,62 +437,6 @@ public class PaintPane extends BorderPane {
 						found = true;
 						selectedFigure = figure;
 						label.append(figure);
-						/*
-						if (duplicateButton.isSelected()) {
-							//ES MUY FEO, VER SI SE PUEDE CAMBIAR. !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-							Figure duplicateFigure = figure.createNewFigure(figure.getPoint1().displacePoint(), figure.getPoint2().displacePoint()
-									, figure.getAxis1(), figure.getAxis2(), figure.getAxis1());
-
-							figurePropertiesMap.put(duplicateFigure, figureProperties);
-							layers.getLayers().get(layer.getLayerNum()).add(duplicateFigure);
-							//canvasState.add(duplicateFigure);
-
-							DrawFigure drawFigure = drawFigureMap.get(figure.getClass());
-							drawFigure.createDrawfigure(gc, figureProperties, figure).drawFigure();
-							redrawCanvas();
-						}
-
-						if (moveButton.isSelected()){
-							if (selectedFigure != null) {
-								selectedFigure.centerFigure(canvas.getWidth(), canvas.getHeight());
-								redrawCanvas();
-							}
-						}
-
-						if (divideButton.isSelected()) {
-
-							double midX = (figure.getPoint1().getX() + figure.getPoint2().getX()) / 2;
-
-							//Dividimos por 3.93 debido a que nos queda de la mejor manera con esa cuenta
-							Figure figureLeft = figure.createDividedFigure(figure.getPoint1(), new Point(midX, figure.getPoint2().getY()),
-									new Point(figure.getPoint1().getX() - figure.getAxis1() / 3.93, figure.getPoint1().getY()), figure.getAxis1() / 2, figure.getAxis2() / 2);
-							Figure figureRight = figure.createDividedFigure(new Point(midX, figure.getPoint1().getY()), figure.getPoint2(),
-									new Point(figure.getPoint1().getX() + figure.getAxis1() / 3.93, figure.getPoint1().getY()), figure.getAxis1() / 2, figure.getAxis2() / 2);
-
-							layers.getLayers().get(layer.getLayerNum()).add(figureLeft);
-							layers.getLayers().get(layer.getLayerNum()).add(figureRight);
-							layers.getLayers().get(layer.getLayerNum()).remove(figure);
-*/
-								/*
-								canvasState.add(figureLeft);
-								canvasState.add(figureRight);
-								canvasState.remove(figure);
-								 */
-						/*
-
-							DrawFigure drawFigureLeft = drawFigureMap.get(figureLeft.getClass());
-							drawFigureLeft.createDrawfigure(gc, figureProperties, figureLeft).drawFigure();
-
-							DrawFigure drawFigureRight = drawFigureMap.get(figureRight.getClass());
-							drawFigureRight.createDrawfigure(gc, figureProperties, figureRight).drawFigure();
-
-							figurePropertiesMap.put(figureLeft, figureProperties);
-							figurePropertiesMap.put(figureRight, figureProperties);
-
-							redrawCanvas();
-						}
-
-						 */
 					}
 				}
 				if (found) {
@@ -552,17 +465,6 @@ public class PaintPane extends BorderPane {
 			}
 
 		});
-
-/*
-		deleteButton.setOnAction(event -> {
-			if (selectedFigure != null) {
-				layerFigureMap.get(currentLayer.getLayerNum()).remove(selectedFigure);
-				selectedFigure = null;
-				redrawCanvas();
-			}
-		});
-
- */
 
 		setLeft(buttonsBox);
 		setRight(canvas);
@@ -599,6 +501,14 @@ public class PaintPane extends BorderPane {
 		figureProperties.setEdge(edge);
 		figureProperties.setWidth(borderSlider.getValue());
 		return figureProperties;
+	}
+
+	private void setButtons(ToggleButton[] buttons, ToggleGroup group){
+		for(ToggleButton button: buttons){
+			button.setMinWidth(90);
+			button.setToggleGroup(group);
+			button.setCursor(Cursor.HAND);
+		}
 	}
 }
 
