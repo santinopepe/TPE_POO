@@ -66,10 +66,10 @@ public class PaintPane extends BorderPane {
 	private Figure selectedFigure;
 
 	//seleccionar un tipo de sombra
-	private ShadowType shadow;
+	private ShadowType shadow = ShadowType.NONE;
 
 	//seleccionar un tipo de borde
-	private EdgeType edge;
+	private EdgeType edge = EdgeType.NORMAL;
 
 	private final Layers layers = new Layers();
 
@@ -88,6 +88,8 @@ public class PaintPane extends BorderPane {
 	private final Map<Class<? extends Figure>, DrawFigure> drawFigureMap = new HashMap<>();
 
 	private final SortedMap<Integer, Layer> layerFigureMap = new TreeMap<>();
+
+
 
 
 	public PaintPane(Layers canvasState, StatusPane statusPane) {
@@ -112,6 +114,7 @@ public class PaintPane extends BorderPane {
 		edgeBox.setValue(EdgeType.NORMAL);
 
 
+
 		borderSlider.setMin(0);
 		borderSlider.setMax(10);
 		borderSlider.setValue(5); // Valor inicial
@@ -134,6 +137,8 @@ public class PaintPane extends BorderPane {
 				new Circle(new Point(0,0), 0)));
 		drawFigureMap.put(Ellipse.class,new DrawEllipse(gc, new FigureProperties(null, null, null, null, 0.0),
 				new  Ellipse(new Point(0,0),1,1)));
+
+
 
 
 		//Barra vertical
@@ -204,6 +209,51 @@ public class PaintPane extends BorderPane {
 		layerBox.getItems().add(layerFigureMap.get(1));
 		layerBox.getItems().add(layerFigureMap.get(2));
 
+		fillColorPicker.setOnAction(event -> {
+			if(selectedFigure != null && selectionButton.isSelected()) {
+				updateFigureProperties();
+				redrawCanvas();
+			}
+		});
+
+		fillSecondaryColorPicker.setOnAction(event -> {
+			if(selectedFigure != null && selectionButton.isSelected()) {
+				updateFigureProperties();
+				redrawCanvas();
+			}
+		});
+
+		borderSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+			if(selectedFigure != null && selectionButton.isSelected()) {
+				updateFigureProperties();
+				redrawCanvas();
+			}
+		});
+
+		shadowsBox.setOnAction(event -> {
+			if(selectedFigure != null && selectionButton.isSelected()) {
+				shadow = shadowsBox.getValue();
+				updateFigureProperties();
+				redrawCanvas();
+			}
+		});
+
+		edgeBox.setOnAction(event -> {
+			if(selectedFigure != null && selectionButton.isSelected()) {
+				edge = edgeBox.getValue();
+				updateFigureProperties();
+				redrawCanvas();
+			}
+		});
+
+		selectionButton.setOnAction(event -> {
+			if (selectionButton.isSelected()) {
+				if (selectedFigure != null) {
+					updateFigureProperties();
+					redrawCanvas();
+				}
+			}
+		});
 		addLayer.setOnAction(event -> {
 			if(addLayer.isSelected()){
 				layerFigureMap.put(cantLayer,new Layer(cantLayer++));
@@ -222,6 +272,7 @@ public class PaintPane extends BorderPane {
 			}
 		});
 
+		//CHEQUEAR DIVIDE, DIVIDE	 MAL NO REDUCE A LA MITAD EL ALTO.
 		divideButton.setOnAction(event -> {
 			if (selectedFigure != null) {
 				double midX = (selectedFigure.getPoint1().getX() + selectedFigure.getPoint2().getX()) / 2;
@@ -256,6 +307,13 @@ public class PaintPane extends BorderPane {
 			}
 		});
 
+		//Set on action para saber en que layer va.
+		layerBox.setOnAction(event -> {
+			currentLayer = layerBox.getValue();
+			//Pongo en null por si habia antes un figura seleccionada
+			selectedFigure = null;
+			redrawCanvas();
+		});
 
 		showLayer.setOnAction(event -> {
 			layerFigureMap.get(layerBox.getValue().getLayerNum()).unHide();
@@ -282,18 +340,45 @@ public class PaintPane extends BorderPane {
 				int size = layerBox.getItems().size();
 				layerBox.getItems().remove(size - 1);
 				currentLayer = layerFigureMap.get(size-1);
+				//Agregue esto porque cuando eliminabamos aparecia en choicebox como si
+				//estuviesemos en la capa q eliminamos.
+				layerBox.setValue(layerFigureMap.get(0));
 			}
 		});
 
+
+
+/*
 		selectionButton.setOnAction(event -> {
-			Figure figure = null;
-			if(selectedFigure != null){
-				figure = selectedFigure;
-				FigureProperties figureProperties = new FigureProperties(fillColorPicker.getValue(), shadowsBox.getValue(),
-						fillSecondaryColorPicker.getValue(), edgeBox.getValue(), borderSlider.getValue());
-				figurePropertiesMap.replace(figure, figureProperties);
+			if(selectionButton.isSelected()){
+				Figure figure = null;
+				if(selectedFigure != null){
+					figure = selectedFigure;
+					updateFigureProperties();
+					redrawCanvas();
+					/*
+					FigureProperties figureProperties = new FigureProperties(fillColorPicker.getValue(), shadowsBox.getValue(),
+							fillSecondaryColorPicker.getValue(), edgeBox.getValue(), borderSlider.getValue());
+					figurePropertiesMap.replace(figure, figureProperties);
+
+
+
+				}
 			}
-		});
+		});*/
+
+
+		/*
+		if(selectedFigure != null && selectionButton.isSelected()){
+			Figure figure = null;
+				figure = selectedFigure;
+				FigureProperties figureProperties = new FigureProperties(fillColorPicker.getValue(),
+				shadowsBox.getValue(),
+				fillSecondaryColorPicker.getValue(), edgeBox.getValue(), borderSlider.getValue());
+				figurePropertiesMap.replace(figure, figureProperties);
+			redrawCanvas();
+		}*/
+
 
 		duplicateButton.setOnAction(event -> {
 			Figure figure = null;
@@ -317,6 +402,8 @@ public class PaintPane extends BorderPane {
 			}
 		});
 
+
+
 		canvas.setOnMousePressed(event -> {
 			startPoint = new Point(event.getX(), event.getY());
 		});
@@ -337,7 +424,7 @@ public class PaintPane extends BorderPane {
 				}
 			}
 			if (newFigure != null) {
-				figureColorMap.put(newFigure,fillColorPicker.getValue());
+				//figureColorMap.put(newFigure,fillColorPicker.getValue());
 				figurePropertiesMap.put(newFigure, new FigureProperties(fillColorPicker.getValue(),
 						shadowsBox.getValue(),
 						fillSecondaryColorPicker.getValue(),
@@ -461,6 +548,7 @@ public class PaintPane extends BorderPane {
 					System.out.println("No hay ninguna figura seleccionada");
 				}
 			}
+
 		});
 
 /*
@@ -476,6 +564,8 @@ public class PaintPane extends BorderPane {
 
 		setLeft(buttonsBox);
 		setRight(canvas);
+
+
 	}
 
 
@@ -498,6 +588,14 @@ public class PaintPane extends BorderPane {
 		}
 	}
 
-
+	//METODO UPDATE CAMBIA LAS CARACTERISTICAS DE UNA FIGURA EN TIMEPO REAL.
+	void updateFigureProperties(){
+		FigureProperties figureProperties = figurePropertiesMap.get(selectedFigure);
+		figureProperties.setColor(fillColorPicker.getValue());
+		figureProperties.setShadowType(shadow);
+		figureProperties.setSecondaryColor(fillSecondaryColorPicker.getValue());
+		figureProperties.setEdge(edge);
+		figureProperties.setWidth(borderSlider.getValue());
+	}
 }
 
