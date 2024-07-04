@@ -2,7 +2,7 @@ package frontend;
 
 import backend.*;
 import backend.model.*;
-import frontend.DrawFigures.DrawEllipse;
+import frontend.DrawFigures.*;
 import frontend.DrawFigures.DrawFigure;
 import frontend.DrawFigures.DrawRect;
 import javafx.geometry.Insets;
@@ -203,7 +203,6 @@ public class PaintPane extends BorderPane {
 		fillSecondaryColorPicker.setOnAction(event -> {
 			if(selectedFigure != null && selectionButton.isSelected()) {
 				figurePropertiesMap.replace(selectedFigure, updateFigureProperties());
-				System.out.println(selectedFigure);
 				redrawCanvas();
 			}
 		});
@@ -245,7 +244,6 @@ public class PaintPane extends BorderPane {
 				layerFigureMap.put(cantLayer,new Layer(cantLayer++));
 				layerBox.getItems().add(layerFigureMap.get(cantLayer-1));
 				currentLayer = layerFigureMap.get(cantLayer-1);
-				System.out.println(currentLayer);
 			}
 		});
 
@@ -322,7 +320,6 @@ public class PaintPane extends BorderPane {
 
 		hideLayer.setOnAction(event -> {
 			layerFigureMap.get(layerBox.getValue().getLayerNum()).hide();
-			System.out.printf("%d", layerBox.getValue().getLayerNum());
 			redrawCanvas();
 		});
 

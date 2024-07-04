@@ -1,7 +1,7 @@
-package backend.model;
-import backend.EdgeType;
-import javafx.scene.paint.Color;
+package frontend.DrawFigures;
+
 import backend.ShadowType;
+import javafx.scene.paint.Color;
 
 import java.util.Objects;
 

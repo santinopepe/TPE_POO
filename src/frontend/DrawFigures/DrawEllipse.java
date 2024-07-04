@@ -3,7 +3,6 @@ package frontend.DrawFigures;
 import backend.ShadowType;
 import backend.model.Ellipse;
 import backend.model.Figure;
-import backend.model.FigureProperties;
 import javafx.scene.canvas.GraphicsContext;
 
 public class DrawEllipse extends DrawFigure{

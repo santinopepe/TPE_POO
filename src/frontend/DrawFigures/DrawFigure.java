@@ -54,11 +54,8 @@ public abstract class DrawFigure{
 
     public void setEdge(){
         gc.setLineWidth(figureProperties.getWidth());
-        //gc.setLineDashes(0);
-        Double[] arr = figureProperties.getEdge().getBorder();
-        //gc.setLineDashes(10.0,0.0,0.0,0.0,0.0);
-        gc.setLineDashes(arr[0],arr[1],arr[2],arr[3],arr[4]);
-        //figureProperties.getEdge().getBorder(gc);
+        figureProperties.getEdge().getBorder(gc);
+
     }
 
     public abstract void drawFigure();
