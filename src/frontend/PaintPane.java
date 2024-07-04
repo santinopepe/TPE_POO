@@ -21,6 +21,12 @@ import backend.Layer;
 import javax.swing.*;
 import java.util.*;
 
+
+
+//OCULTAR ESTA FALLANDO, OCULTA TODO.
+//OTRO PROBLEMA ES QUE CUANDO DUPLICO LE AGREGA LAS CARATERISTICAS AL DUPLICADO Y AL OTRO,
+//LO MISMO CUANDO DIVIDO.
+
 public class PaintPane extends BorderPane {
 
 	// BackEnd
@@ -59,7 +65,6 @@ public class PaintPane extends BorderPane {
 	// Dibujar una figura
 	private Point startPoint;
 
-
 	private Layer currentLayer;
 
 	// Seleccionar una figura
@@ -89,9 +94,7 @@ public class PaintPane extends BorderPane {
 
 	private final SortedMap<Integer, Layer> layerFigureMap = new TreeMap<>();
 
-
-
-
+	
 	public PaintPane(Layers canvasState, StatusPane statusPane) {
 
 		this.canvasState = canvasState;
@@ -211,21 +214,21 @@ public class PaintPane extends BorderPane {
 
 		fillColorPicker.setOnAction(event -> {
 			if(selectedFigure != null && selectionButton.isSelected()) {
-				updateFigureProperties();
+				figurePropertiesMap.replace(selectedFigure, updateFigureProperties());
 				redrawCanvas();
 			}
 		});
 
 		fillSecondaryColorPicker.setOnAction(event -> {
 			if(selectedFigure != null && selectionButton.isSelected()) {
-				updateFigureProperties();
+				figurePropertiesMap.replace(selectedFigure, updateFigureProperties());
 				redrawCanvas();
 			}
 		});
 
 		borderSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
 			if(selectedFigure != null && selectionButton.isSelected()) {
-				updateFigureProperties();
+				figurePropertiesMap.replace(selectedFigure, updateFigureProperties());
 				redrawCanvas();
 			}
 		});
@@ -233,7 +236,7 @@ public class PaintPane extends BorderPane {
 		shadowsBox.setOnAction(event -> {
 			if(selectedFigure != null && selectionButton.isSelected()) {
 				shadow = shadowsBox.getValue();
-				updateFigureProperties();
+				figurePropertiesMap.replace(selectedFigure, updateFigureProperties());
 				redrawCanvas();
 			}
 		});
@@ -241,7 +244,7 @@ public class PaintPane extends BorderPane {
 		edgeBox.setOnAction(event -> {
 			if(selectedFigure != null && selectionButton.isSelected()) {
 				edge = edgeBox.getValue();
-				updateFigureProperties();
+				figurePropertiesMap.replace(selectedFigure, updateFigureProperties());
 				redrawCanvas();
 			}
 		});
@@ -254,6 +257,7 @@ public class PaintPane extends BorderPane {
 				}
 			}
 		});
+
 		addLayer.setOnAction(event -> {
 			if(addLayer.isSelected()){
 				layerFigureMap.put(cantLayer,new Layer(cantLayer++));
@@ -272,7 +276,7 @@ public class PaintPane extends BorderPane {
 			}
 		});
 
-		//CHEQUEAR DIVIDE, DIVIDE	 MAL NO REDUCE A LA MITAD EL ALTO.
+		//CHEQUEAR DIVIDE, DIVIDE MAL NO REDUCE A LA MITAD EL ALTO.
 		divideButton.setOnAction(event -> {
 			if (selectedFigure != null) {
 				double midX = (selectedFigure.getPoint1().getX() + selectedFigure.getPoint2().getX()) / 2;
@@ -569,7 +573,7 @@ public class PaintPane extends BorderPane {
 	}
 
 
-	void redrawCanvas() {
+	private void redrawCanvas() {
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		//Podemos hacer un metodo getLayerFigures y devuelve las figuras del layer.
 		for (Layer layer : layerFigureMap.values()) {
@@ -589,13 +593,14 @@ public class PaintPane extends BorderPane {
 	}
 
 	//METODO UPDATE CAMBIA LAS CARACTERISTICAS DE UNA FIGURA EN TIMEPO REAL.
-	void updateFigureProperties(){
+	private FigureProperties updateFigureProperties(){
 		FigureProperties figureProperties = figurePropertiesMap.get(selectedFigure);
 		figureProperties.setColor(fillColorPicker.getValue());
 		figureProperties.setShadowType(shadow);
 		figureProperties.setSecondaryColor(fillSecondaryColorPicker.getValue());
 		figureProperties.setEdge(edge);
 		figureProperties.setWidth(borderSlider.getValue());
+		return figureProperties;
 	}
 }
 
