@@ -4,6 +4,7 @@ import backend.ShadowType;
 import backend.model.Ellipse;
 import backend.model.Figure;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 
 public class DrawEllipse extends DrawFigure{
 
@@ -29,10 +30,14 @@ public class DrawEllipse extends DrawFigure{
                 ellipse.getsMayorAxis(), ellipse.getsMinorAxis());
 
     }
-
-    @Override
-    public DrawFigure createDrawfigure(GraphicsContext gc, FigureProperties fProperties, Figure figure) {
-        return new DrawEllipse(gc,fProperties,figure);
+    public DrawFigure updateFigureProperties(Color color, ShadowType shadow, Color secColor, EdgeType edge, Double width ){
+        FigureProperties figureProperties = getFigureProperties();
+        figureProperties.setColor(color);
+        figureProperties.setShadowType(shadow);
+        figureProperties.setSecondaryColor(secColor);
+        figureProperties.setEdge(edge);
+        figureProperties.setWidth(width);
+        return new DrawEllipse(getGc(),figureProperties,getFigure());
     }
 
 }

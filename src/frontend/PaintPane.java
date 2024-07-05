@@ -1,10 +1,13 @@
 package frontend;
 
+import javafx.scene.control.Alert.AlertType;
 import backend.*;
 import backend.model.*;
+import frontend.Buttons.*;
 import frontend.DrawFigures.*;
 import frontend.DrawFigures.DrawFigure;
 import frontend.DrawFigures.DrawRect;
+import frontend.Exceptions.HiddenLayerException;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
@@ -29,10 +32,14 @@ public class PaintPane extends BorderPane {
 
 	// Botones Barra Izquierda
 	private final ToggleButton selectionButton = new ToggleButton("Seleccionar");
-	private final ToggleButton rectangleButton = new ToggleButton("Rectángulo");
-	private final ToggleButton circleButton = new ToggleButton("Círculo");
-	private final ToggleButton squareButton = new ToggleButton("Cuadrado");
-	private final ToggleButton ellipseButton = new ToggleButton("Elipse");
+
+
+	private final CustomButton rectangleButton = new RectangleButton("Rectángulo");
+	private final CustomButton circleButton = new CircleButton("Círculo");
+	private final CustomButton squareButton = new SquareButton("Cuadrado");
+	private final CustomButton ellipseButton = new EllipseButton("Elipse");
+
+
 	private final ToggleButton deleteButton = new ToggleButton("Borrar");
 	private final ToggleButton duplicateButton = new ToggleButton("Duplicar");
 	private final ToggleButton divideButton = new ToggleButton("Dividir");
@@ -46,7 +53,7 @@ public class PaintPane extends BorderPane {
 	private final ColorPicker fillColorPicker = new ColorPicker(defaultFillColor);
 
 	//Selector del color secundario.
-	private final ColorPicker fillSecondaryColorPicker = new ColorPicker(defaultFillColor);
+	private final ColorPicker fillSecondaryColorPicker = new ColorPicker(Color.AQUA);
 
 	//slider para el borde
 	private final Slider borderSlider = new Slider(0,10, 0);
@@ -68,21 +75,17 @@ public class PaintPane extends BorderPane {
 	private int cantLayer=0;
 	// Colores de relleno de cada figura
 
-	private final Map<Figure, FigureProperties> figurePropertiesMap = new HashMap<>();
+	private final Map<Figure, DrawFigure> figurePropertiesMap = new HashMap<>();
 
-	private final Map<ToggleButton, Figure> figureButtonMap = new HashMap<>();
-
-	private final Map<Class<? extends Figure>, DrawFigure> drawFigureMap = new HashMap<>();
+	private final Map<Figure,CustomButton> figureButtonMap = new HashMap<>();
 
 	private final SortedMap<Integer, Layer> layerFigureMap = new TreeMap<>();
 
-	
+	private final ChoiceBox<ShadowType> shadowsBox = new ChoiceBox<>();
+	private final ChoiceBox<EdgeType> edgeBox = new ChoiceBox<>();
+	private final ChoiceBox<Layer> layerBox = new ChoiceBox<>();
+
 	public PaintPane(Layers canvasState, StatusPane statusPane) {
-
-		ChoiceBox<ShadowType> shadowsBox = new ChoiceBox<>();
-		ChoiceBox<EdgeType> edgeBox = new ChoiceBox<>();
-		ChoiceBox<Layer> layerBox = new ChoiceBox<>();
-
  		Label shadowLable = new Label("Sombras");
 		Label borderLable = new Label("Borde");
 		Label fillingLable = new Label("Relleno");
@@ -95,36 +98,17 @@ public class PaintPane extends BorderPane {
 		shadowsBox.setValue(ShadowType.NONE);
 		edgeBox.setValue(EdgeType.NORMAL);
 
-
-
 		borderSlider.setMin(0);
 		borderSlider.setMax(10);
 		borderSlider.setValue(5); // Valor inicial
 		borderSlider.setShowTickLabels(true);
 
 		ToggleButton[] toolsArr = {selectionButton, rectangleButton, circleButton, squareButton, ellipseButton, deleteButton};
+		CustomButton[] customButtons = {rectangleButton, circleButton, squareButton, ellipseButton};
+
 		ToggleGroup tools = new ToggleGroup();
 
-		figureButtonMap.put(rectangleButton, new Rectangle(new Point(0,0),new Point(0,0)));
-		figureButtonMap.put(circleButton, new Circle(new Point(0,0), 1));
-		figureButtonMap.put(squareButton, new Square(new Point(0,0), 0));
-		figureButtonMap.put(ellipseButton, new Ellipse(new Point(0,0),1,1));
-
-		//DESPUES REPENSAR.
-		drawFigureMap.put(Rectangle.class, new DrawRect(gc, new FigureProperties(null, null, null, null, 0.0),
-				new Rectangle(new Point(0,0),new Point(0,0))));
-		drawFigureMap.put(Square.class, new DrawRect(gc, new FigureProperties(null, null, null, null, 0.0),
-				new Square(new Point(0,0), 0)));
-		drawFigureMap.put(Circle.class, new DrawEllipse(gc, new FigureProperties(null, null, null, null, 0.0),
-				new Circle(new Point(0,0), 0)));
-		drawFigureMap.put(Ellipse.class,new DrawEllipse(gc, new FigureProperties(null, null, null, null, 0.0),
-				new  Ellipse(new Point(0,0),1,1)));
-
-
-
-
 		//Barra vertical
-
 		setButtons(toolsArr,tools);
 
 		VBox buttonsBox = new VBox(10);
@@ -143,7 +127,6 @@ public class PaintPane extends BorderPane {
 		ToggleButton[] actionsArray = {duplicateButton, divideButton, moveButton};
 		ToggleGroup arrTools = new ToggleGroup();
 		setButtons(actionsArray,arrTools);
-
 		buttonsBox.getChildren().addAll(actionsArray);
 
 		ToggleButton[] layersArr = {showLayer,hideLayer,addLayer,removeLayer};
@@ -169,62 +152,60 @@ public class PaintPane extends BorderPane {
 		horizontalBox.setPrefHeight(50);
 		setTop(horizontalBox);
 
-		layerFigureMap.put(cantLayer, new Layer(cantLayer++));
-		layerFigureMap.put(cantLayer, new Layer(cantLayer++));
-		layerFigureMap.put(cantLayer, new Layer(cantLayer++));
+		for (int i = 0; i < 3; i++) {
+			layerFigureMap.put(cantLayer, new Layer(cantLayer++));
+			layerFigureMap.get(i).cannotEliminate();
+			layerBox.getItems().add(layerFigureMap.get(i));
+		}
 
 		layerBox.setValue(layerFigureMap.get(0));
 		currentLayer = layerFigureMap.get(0);
 
-		for (int i = 0; i < cantLayer; i++) {
-			layerFigureMap.get(i).cannotEliminate();
-		}
-
-		layerBox.getItems().add(layerFigureMap.get(0));
-		layerBox.getItems().add(layerFigureMap.get(1));
-		layerBox.getItems().add(layerFigureMap.get(2));
-
 		fillColorPicker.setOnAction(event -> {
 			if(selectedFigure != null && selectionButton.isSelected()) {
-				figurePropertiesMap.replace(selectedFigure, updateFigureProperties());
+				DrawFigure df = figurePropertiesMap.get(selectedFigure);
+				df.getFigureProperties().setColor(fillColorPicker.getValue());
 				redrawCanvas();
 			}
 		});
 
 		fillSecondaryColorPicker.setOnAction(event -> {
 			if(selectedFigure != null && selectionButton.isSelected()) {
-				figurePropertiesMap.replace(selectedFigure, updateFigureProperties());
+				DrawFigure df = figurePropertiesMap.get(selectedFigure);
+				df.getFigureProperties().setSecondaryColor(fillSecondaryColorPicker.getValue());
 				redrawCanvas();
 			}
 		});
 
 		borderSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
 			if(selectedFigure != null && selectionButton.isSelected()) {
-				figurePropertiesMap.replace(selectedFigure, updateFigureProperties());
+				DrawFigure df = figurePropertiesMap.get(selectedFigure);
+				df.getFigureProperties().setWidth(borderSlider.getValue());
 				redrawCanvas();
 			}
 		});
 
 		shadowsBox.setOnAction(event -> {
 			if(selectedFigure != null && selectionButton.isSelected()) {
-				shadow = shadowsBox.getValue();
-				figurePropertiesMap.replace(selectedFigure, updateFigureProperties());
+				DrawFigure df = figurePropertiesMap.get(selectedFigure);
+				df.getFigureProperties().setShadowType(shadowsBox.getValue());
 				redrawCanvas();
 			}
 		});
 
 		edgeBox.setOnAction(event -> {
 			if(selectedFigure != null && selectionButton.isSelected()) {
-				edge = edgeBox.getValue();
-				figurePropertiesMap.replace(selectedFigure, updateFigureProperties());
+				DrawFigure df = figurePropertiesMap.get(selectedFigure);
+				df.getFigureProperties().setEdge(edgeBox.getValue());
 				redrawCanvas();
 			}
 		});
 
+
 		selectionButton.setOnAction(event -> {
 			if (selectionButton.isSelected()) {
 				if (selectedFigure != null) {
-					updateFigureProperties();
+					setPreviousProp();
 					redrawCanvas();
 				}
 			}
@@ -235,7 +216,7 @@ public class PaintPane extends BorderPane {
 				layerFigureMap.put(cantLayer,new Layer(cantLayer++));
 				layerBox.getItems().add(layerFigureMap.get(cantLayer-1));
 				currentLayer = layerFigureMap.get(cantLayer-1);
-				showLayer.fire();
+				layerBox.setValue(currentLayer);
 			}
 		});
 
@@ -270,7 +251,8 @@ public class PaintPane extends BorderPane {
 						selectedFigure.getAxis2() / 2
 				);
 
-				FigureProperties figureProperties = figurePropertiesMap.get(selectedFigure);
+				FigureProperties figureProperties = figurePropertiesMap.get(selectedFigure).getFigureProperties();
+
 				FigureProperties leftProperties = new FigureProperties(
 						figureProperties.getColor(),
 						figureProperties.getShadowType(),
@@ -286,12 +268,23 @@ public class PaintPane extends BorderPane {
 						figureProperties.getWidth()
 				);
 
-				figurePropertiesMap.put(figureLeft, leftProperties);
-				figurePropertiesMap.put(figureRight, rightProperties);
+				DrawFigure dfL = figureButtonMap.get(selectedFigure).createDrawfigure(gc,leftProperties,figureLeft);
+				DrawFigure dfR = figureButtonMap.get(selectedFigure).createDrawfigure(gc,rightProperties,figureRight);
+
+				figureButtonMap.put(figureLeft,figureButtonMap.get(selectedFigure));
+				figureButtonMap.put(figureRight,figureButtonMap.get(selectedFigure));
+
+
+				figureButtonMap.remove(selectedFigure);
+				figurePropertiesMap.remove(selectedFigure);
+
+				figurePropertiesMap.put(figureLeft, dfL);
+				figurePropertiesMap.put(figureRight, dfR);
 
 				layerFigureMap.get(currentLayer.getLayerNum()).add(figureLeft);
 				layerFigureMap.get(currentLayer.getLayerNum()).add(figureRight);
 				layerFigureMap.get(currentLayer.getLayerNum()).remove(selectedFigure);
+
 				selectedFigure=null;
 				redrawCanvas();
 			}
@@ -343,7 +336,8 @@ public class PaintPane extends BorderPane {
 					layerBox.setValue(layerFigureMap.get(0));
 				}
 			}catch (Exception ex){
-				System.out.println("La capa no existe");
+
+				showAlert("La capa no existe");
 			}
 		});
 
@@ -351,10 +345,15 @@ public class PaintPane extends BorderPane {
 			Figure figure;
 			if(selectedFigure != null && duplicateButton.isSelected()){
 				figure = selectedFigure;
-				FigureProperties figureProperties = figurePropertiesMap.get(selectedFigure);
+				FigureProperties figureProperties = figurePropertiesMap.get(figure).getFigureProperties();
+
 				//ES MUY FEO, VER SI SE PUEDE CAMBIAR. !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				Figure duplicateFigure = figure.createNewFigure(figure.getPoint1().displacePoint(), figure.getPoint2().displacePoint()
-						, figure.getAxis1(), figure.getAxis2(), figure.getAxis1());
+
+				Figure duplicateFigure = figureButtonMap.get(figure).createNewFigure(figure.getPoint1().displacePoint(),
+						figure.getPoint2().displacePoint(),
+						figure.getAxis1(),
+						figure.getAxis2(),
+						figure.getAxis1());
 
 				FigureProperties dupProperties = new FigureProperties(
 						figureProperties.getColor(),
@@ -363,12 +362,11 @@ public class PaintPane extends BorderPane {
 						figureProperties.getEdge(),
 						figureProperties.getWidth()
 				);
-
-				figurePropertiesMap.put(duplicateFigure, dupProperties);
+				DrawFigure dupDrawFigure = figureButtonMap.get(figure).createDrawfigure(gc,dupProperties,duplicateFigure);
+				figurePropertiesMap.put(duplicateFigure, dupDrawFigure);
 				layerFigureMap.get(currentLayer.getLayerNum()).add(duplicateFigure);
-				DrawFigure drawFigure = drawFigureMap.get(figure.getClass());
-				drawFigure.createDrawfigure(gc, dupProperties, figure).drawFigure();
-
+				figureButtonMap.put(duplicateFigure,figureButtonMap.get(figure));
+				selectedFigure = null;
 				redrawCanvas();
 			}
 		});
@@ -383,21 +381,28 @@ public class PaintPane extends BorderPane {
 				return ;
 			}
 			Figure newFigure = null;
-			for(ToggleButton button : toolsArr){
-				if(button.isSelected() && !button.equals(selectionButton) && !button.equals(deleteButton) ){
-					newFigure = figureButtonMap.get(button).createNewFigure(startPoint,endPoint,Math.abs(endPoint.getX()
-									- startPoint.getX()),Math.abs(endPoint.getY() - startPoint.getY()), Math.abs(endPoint.getX() - startPoint.getX()));
+			if(currentLayer.getIsHidden()){
+				System.out.println("esta oculta");
+				return;
+			}
+			for(CustomButton button : customButtons){
+				if(button.isSelected()){
+					newFigure = button.createNewFigure(startPoint,endPoint,Math.abs(endPoint.getX()
+							- startPoint.getX()),Math.abs(endPoint.getY() - startPoint.getY()), Math.abs(endPoint.getX() - startPoint.getX()));
+					if (newFigure != null) {
+						FigureProperties fp = new FigureProperties(fillColorPicker.getValue(),
+								shadowsBox.getValue(),
+								fillSecondaryColorPicker.getValue(),
+								edgeBox.getValue(), borderSlider.getValue());
+						//VER DE SACAR EL PARAMETRO NEWFIGURE.
+						figurePropertiesMap.put(newFigure, button.createDrawfigure(gc,fp,newFigure));
+						layerFigureMap.get(currentLayer.getLayerNum()).add(newFigure);
+						figureButtonMap.put(newFigure,button);
+					}
+
 				}
-			}
-			if (newFigure != null) {
-				figurePropertiesMap.put(newFigure, new FigureProperties(fillColorPicker.getValue(),
-						shadowsBox.getValue(),
-						fillSecondaryColorPicker.getValue(),
-						edgeBox.getValue(), borderSlider.getValue()));
 
-				layerFigureMap.get(currentLayer.getLayerNum()).add(newFigure);
 			}
-
 			startPoint = null;
 			redrawCanvas();
 		});
@@ -406,15 +411,19 @@ public class PaintPane extends BorderPane {
 			Point eventPoint = new Point(event.getX(), event.getY());
 			boolean found = false;
 			StringBuilder label = new StringBuilder();
-			for(Layer layer : layerFigureMap.values()){
-				for(Figure figure : layer.figures()) {
-					if(figure.belongs(eventPoint)) {
+			List<Layer> layersReversed = new ArrayList<>(layerFigureMap.values());
+			Collections.reverse(layersReversed);
+			for (Layer layer : layersReversed) {
+				List<Figure> figuresReversed = new ArrayList<>((Collection) layer.figures());
+				Collections.reverse(figuresReversed);
+				for (Figure figure : figuresReversed) {
+					if (figure.belongs(eventPoint)) {
 						found = true;
 						label.append(figure);
 					}
 				}
 			}
-			if(found) {
+			if (found) {
 				statusPane.updateStatus(label.toString());
 			} else {
 				statusPane.updateStatus(eventPoint.toString());
@@ -426,18 +435,28 @@ public class PaintPane extends BorderPane {
 				Point eventPoint = new Point(event.getX(), event.getY());
 				boolean found = false;
 				StringBuilder label = new StringBuilder("Se seleccionó: ");
-				for (Figure figure : currentLayer.figures()) {
-					if (figure.belongs(eventPoint)) {
-						found = true;
-						selectedFigure = figure;
-						label.append(figure);
+				for (Layer layer : layerFigureMap.values()) {
+					for (Figure figure : layer.figures()) {
+						if (figure.belongs(eventPoint)) {
+							found = true;
+							selectedFigure = figure;
+							label.append(figure);
+						}
 					}
 				}
 				if (found) {
+					setPreviousProp();
 					statusPane.updateStatus(label.toString());
+					/*FigureProperties fp = figurePropertiesMap.get(selectedFigure).getFigureProperties();
+					shadowsBox.setValue(fp.getShadowType());
+					fillColorPicker.setValue(fp.getColor());
+					borderSlider.setValue(fp.getWidth());
+					edgeBox.setValue(fp.getEdge());
+					fillSecondaryColorPicker.setValue(fp.getSecondaryColor());*/
 				} else {
 					selectedFigure = null;
 					statusPane.updateStatus("Ninguna figura encontrada");
+
 				}
 				redrawCanvas();
 			}
@@ -447,18 +466,24 @@ public class PaintPane extends BorderPane {
 		canvas.setOnMouseDragged(event -> {
 			if(selectionButton.isSelected()) {
 				try {
-					Point eventPoint = new Point(event.getX(), event.getY());
-					double diffX = (eventPoint.getX() - startPoint.getX()) / 100;
-					double diffY = (eventPoint.getY() - startPoint.getY()) / 100;
-					selectedFigure.moveCoordX(diffX);
-					selectedFigure.moveCoordY(diffY);
-					redrawCanvas();
-				}catch(Exception ex){
-					System.out.println("No hay ninguna figura seleccionada");
+					if (selectedFigure != null) {
+						Point eventPoint = new Point(event.getX(), event.getY());
+						double diffX = (eventPoint.getX() - startPoint.getX()) / 100;
+						double diffY = (eventPoint.getY() - startPoint.getY()) / 100;
+						selectedFigure.moveCoordX(diffX);
+						selectedFigure.moveCoordY(diffY);
+						redrawCanvas();
+					}
+				}catch(Exception e){
+					showHiddenLayerAlert(e.getMessage());
+					//System.out.println("No hay ninguna figura seleccionada");
 				}
 			}
 
 		});
+
+
+
 
 		setLeft(buttonsBox);
 		setRight(canvas);
@@ -476,23 +501,28 @@ public class PaintPane extends BorderPane {
 					} else {
 						gc.setStroke(lineColor);
 					}
-					FigureProperties fp = figurePropertiesMap.get(figure);
-					DrawFigure drawFigure = drawFigureMap.get(figure.getClass());
-					drawFigure.createDrawfigure(gc, fp, figure).drawFigure();
+					DrawFigure drawFigure = figurePropertiesMap.get(figure);
+					drawFigure.drawFigure();
 				}
 			}
 		}
 	}
-
-	//METODO UPDATE CAMBIA LAS CARACTERISTICAS DE UNA FIGURA EN TIMEPO REAL.
-	private FigureProperties updateFigureProperties(){
-		FigureProperties figureProperties = figurePropertiesMap.get(selectedFigure);
+	private void updateFigureProperties(){
+		FigureProperties figureProperties = figurePropertiesMap.get(selectedFigure).getFigureProperties();
 		figureProperties.setColor(fillColorPicker.getValue());
 		figureProperties.setShadowType(shadow);
 		figureProperties.setSecondaryColor(fillSecondaryColorPicker.getValue());
 		figureProperties.setEdge(edge);
 		figureProperties.setWidth(borderSlider.getValue());
-		return figureProperties;
+	}
+
+	private void setPreviousProp(){
+		FigureProperties fp = figurePropertiesMap.get(selectedFigure).getFigureProperties();
+		fillColorPicker.setValue(fp.getColor());
+		fillSecondaryColorPicker.setValue(fp.getSecondaryColor());
+		borderSlider.setValue(fp.getWidth());
+		edgeBox.setValue(fp.getEdge());
+		shadowsBox.setValue(fp.getShadowType());
 	}
 
 	private void setButtons(ToggleButton[] buttons, ToggleGroup group){
@@ -502,5 +532,23 @@ public class PaintPane extends BorderPane {
 			button.setCursor(Cursor.HAND);
 		}
 	}
+
+	private void showLayerAlert(String message){
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Error de dibujo");
+        alert.setHeaderText("En las capas");
+        alert.setContentText(message);
+        alert.showAndWait();
+	}
+
+
+	private void showHiddenLayerAlert(String message){
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Error de capas");
+        alert.setHeaderText("Dibujo en capa");
+        alert.setContentText(message);
+        alert.showAndWait();
+	}
+
 }
 

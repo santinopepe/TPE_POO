@@ -3,10 +3,7 @@ package frontend.DrawFigures;
 import backend.ShadowType;
 import backend.model.*;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.CycleMethod;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.RadialGradient;
-import javafx.scene.paint.Stop;
+import javafx.scene.paint.*;
 
 
 public abstract class DrawFigure{
@@ -60,8 +57,6 @@ public abstract class DrawFigure{
 
     public abstract void drawFigure();
 
-    public abstract DrawFigure createDrawfigure(GraphicsContext gc, FigureProperties fProperties, Figure figure);
-
     public boolean areEqual(){
         return figureProperties.getColor().equals(figureProperties.getSecondaryColor());
     }
@@ -77,4 +72,7 @@ public abstract class DrawFigure{
     public FigureProperties getFigureProperties(){
         return figureProperties;
     }
+
+    public abstract DrawFigure updateFigureProperties(Color color, ShadowType shadow, Color secColor, EdgeType edge, Double width );
+
 }

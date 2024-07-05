@@ -98,11 +98,6 @@ public class Ellipse implements Figure{
 
 
     @Override
-    public Figure createNewFigure(Point point1, Point point2, double axis1, double axis2, double size) {
-        return new Ellipse(point1, axis1, axis2);
-    }
-
-    @Override
     public void centerFigure(double canvasWidth, double canvasHeight) {
         centerPoint.setX(canvasWidth / 2);
         centerPoint.setY(canvasHeight / 2);

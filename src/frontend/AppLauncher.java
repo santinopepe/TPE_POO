@@ -8,11 +8,6 @@ import javafx.stage.Stage;
 
 
 //Cuando esta oculta la capa tire warning si se quiere dibujar.
-//La elipse se dibuja mal.
-//Etiquetas las de arriba primero.
-//Cuando toco una figura se tiene, poner las propiedades de esa misma.
-//Fire anda mal, cuando se agrega una capa hay quilombos con el show.
-//Se tiene que poder seleccionar la figura sin importar la capa.
 public class AppLauncher extends Application {
 
 	public static void main(String[] args) {

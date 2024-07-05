@@ -53,11 +53,6 @@ public class Rectangle implements Figure{
     }
 
     @Override
-    public Figure createNewFigure(Point point1, Point point2, double axis1, double axis2, double size) {
-        return new Rectangle(point1, point2);
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Rectangle rectangle)) return false;

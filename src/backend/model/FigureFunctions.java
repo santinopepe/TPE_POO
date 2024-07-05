@@ -11,6 +11,5 @@ public interface FigureFunctions {
     double getAxis1();
     double getAxis2();
     Figure createDividedFigure(Point point1, Point point2, Point centerP,double axis1, double axis2);
-    Figure createNewFigure(Point point1, Point point2, double axis1, double axis2, double size);
     void centerFigure(double canvasWidth, double canvasHeight);
 }

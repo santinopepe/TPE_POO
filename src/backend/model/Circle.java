@@ -11,9 +11,4 @@ public class Circle extends Ellipse {
         return String.format("Círculo [Centro: %s, Radio: %.2f]", getCenterPoint(), getsMayorAxis());
     }
 
-    public Figure createNewFigure(Point point1, Point ponit2, double axis1, double axis2, double size) {
-        return new Circle(point1, axis1);
-    }
-
-
 }

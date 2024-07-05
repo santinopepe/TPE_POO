@@ -27,12 +27,14 @@ public class AppMenuBar extends MenuBar {
         aboutMenuItem.setOnAction(event -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Acerca De");
-            alert.setHeaderText("Paint");
-            alert.setContentText("TPE Final POO Julio 2024");
+            alert.setHeaderText("TPE Final POO Julio 2024");
+            alert.setContentText("Integrantes del grupo: Santino Pepe, Santiago Nogueira, Martin Gallardo");
             alert.showAndWait();
         });
         help.getItems().add(aboutMenuItem);
         getMenus().addAll(file, help);
+
+
     }
 
 }
