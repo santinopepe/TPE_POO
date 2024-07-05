@@ -235,6 +235,7 @@ public class PaintPane extends BorderPane {
 				layerFigureMap.put(cantLayer,new Layer(cantLayer++));
 				layerBox.getItems().add(layerFigureMap.get(cantLayer-1));
 				currentLayer = layerFigureMap.get(cantLayer-1);
+				showLayer.fire();
 			}
 		});
 
@@ -301,6 +302,12 @@ public class PaintPane extends BorderPane {
 			currentLayer = layerBox.getValue();
 			//Pongo en null por si habia antes un figura seleccionada
 			selectedFigure = null;
+			//VER SI PODEMOS HACER UN METODO QUE HAGA ESTO.
+			if (currentLayer.getIsHidden()){
+				hideLayer.fire();
+			} else {
+				showLayer.fire();
+			}
 			redrawCanvas();
 		});
 
@@ -372,10 +379,7 @@ public class PaintPane extends BorderPane {
 
 		canvas.setOnMouseReleased(event -> {
 			Point endPoint = new Point(event.getX(), event.getY());
-			if(startPoint == null) {
-				return ;
-			}
-			if(endPoint.getX() < startPoint.getX() || endPoint.getY() < startPoint.getY()) {
+			if(startPoint == null || endPoint.getX() < startPoint.getX() || endPoint.getY() < startPoint.getY()) {
 				return ;
 			}
 			Figure newFigure = null;
@@ -461,7 +465,6 @@ public class PaintPane extends BorderPane {
 
 
 	}
-
 
 	private void redrawCanvas() {
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
