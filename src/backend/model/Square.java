@@ -8,7 +8,6 @@ public class Square extends Rectangle {
         this.size = size;
 
     }
-
     @Override
     public String toString() {
         return String.format("Cuadrado [ %s , %s ]", getTopLeft(), getBottomRight());

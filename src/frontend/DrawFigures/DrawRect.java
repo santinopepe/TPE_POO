@@ -1,6 +1,5 @@
 package frontend.DrawFigures;
 
-import backend.ShadowType;
 import backend.model.*;
 import backend.model.Rectangle;
 

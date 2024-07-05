@@ -1,6 +1,5 @@
 package frontend.DrawFigures;
 
-import backend.ShadowType;
 import backend.model.*;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.*;

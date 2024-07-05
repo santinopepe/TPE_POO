@@ -1,6 +1,6 @@
 package backend.model;
 
-public interface FigureFunctions {
+public interface FigureFunctions{
     double figureCalcXCoord();
     double figureCalcYCoord();
     boolean belongs(Point eventPoint);

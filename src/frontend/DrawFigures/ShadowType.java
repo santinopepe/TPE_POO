@@ -1,4 +1,4 @@
-package backend;
+package frontend.DrawFigures;
 import javafx.scene.paint.Color;
 
 public enum ShadowType {

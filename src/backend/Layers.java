@@ -1,28 +1,76 @@
 package backend;
 
+
+import backend.Exceptions.HiddenLayerException;
+import backend.Exceptions.NotDeletableLayerException;
+import backend.model.Figure;
+
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
-public class Layers{
+public class Layers extends ArrayList<Figure> {
 
-    private static final int FIRST_LAYER = 1;
-    private static int  LAYER_NUM = FIRST_LAYER;
+    private final int layerNum;
+    private boolean isHidden = false;
+    private boolean canEliminate = true;
 
-    private final List<Layer> layers = new ArrayList<>();
+    public Layers(int layerNum) {
+        this.layerNum = layerNum;
+    }
 
-    public List<Layer> getLayers(){
-        return layers;
+    public void hide(){
+        isHidden = true;
+    }
+
+    public void unHide(){
+        isHidden = false;
+    }
+
+    public void cannotEliminate(){
+        canEliminate = false;
+    }
+
+    public void canEliminateException(){
+        if(!canEliminate){
+            throw new NotDeletableLayerException();
+        }
+    }
+
+    public Iterable<Figure> figures() {
+        return this;
     }
 
     public int getLayerNum(){
-        return LAYER_NUM;
+        return layerNum;
     }
 
-    public void addLayer(){
-        Layer layer =new Layer(LAYER_NUM++);
-        layers.add(layer);
-        System.out.println("addLayer %s".formatted(layer));
+    public boolean getIsHidden(){
+        return isHidden;
     }
+
+    public void getHiddenException(){
+        if(isHidden){
+            throw new HiddenLayerException();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Capa %d".formatted(layerNum+1);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Layers)) return false;
+        return layerNum == ((Layers) o).layerNum;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(layerNum);
+    }
+
 
 }
 

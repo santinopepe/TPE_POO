@@ -1,5 +1,6 @@
 package frontend;
 
+import backend.CanvasState;
 import backend.Layers;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -15,7 +16,7 @@ public class AppLauncher extends Application {
 
 	@Override
 	public void start(Stage primaryStage) {
-		Layers canvasState = new Layers(); // BackEnd
+		CanvasState canvasState = new CanvasState(); // BackEnd
 		MainFrame frame = new MainFrame(canvasState);
 		Scene scene = new Scene(frame);
 		primaryStage.setResizable(false); 

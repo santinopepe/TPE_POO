@@ -18,7 +18,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import backend.Layer;
+import backend.CanvasState;
 
 import java.util.*;
 
@@ -61,31 +61,29 @@ public class PaintPane extends BorderPane {
 	// Dibujar una figura
 	private Point startPoint;
 
-	private Layer currentLayer;
+	private Layers currentLayer;
+
+	//CanvasState
+	CanvasState canvasState;
 
 	// Seleccionar una figura
 	private Figure selectedFigure;
 
-	//seleccionar un tipo de sombra
-	private ShadowType shadow = ShadowType.NONE;
-
-	//seleccionar un tipo de borde
-	private EdgeType edge = EdgeType.NORMAL;
-
 	private int cantLayer=0;
-	// Colores de relleno de cada figura
 
 	private final Map<Figure, DrawFigure> figurePropertiesMap = new HashMap<>();
 
 	private final Map<Figure,CustomButton> figureButtonMap = new HashMap<>();
 
-	private final SortedMap<Integer, Layer> layerFigureMap = new TreeMap<>();
+	private final SortedMap<Integer, Layers> layerFigureMap = new TreeMap<>();
 
 	private final ChoiceBox<ShadowType> shadowsBox = new ChoiceBox<>();
 	private final ChoiceBox<EdgeType> edgeBox = new ChoiceBox<>();
-	private final ChoiceBox<Layer> layerBox = new ChoiceBox<>();
+	private final ChoiceBox<Layers> layerBox = new ChoiceBox<>();
 
-	public PaintPane(Layers canvasState, StatusPane statusPane) {
+	public PaintPane(CanvasState canvasState,StatusPane statusPane) {
+		this.canvasState = canvasState;
+
  		Label shadowLable = new Label("Sombras");
 		Label borderLable = new Label("Borde");
 		Label fillingLable = new Label("Relleno");
@@ -155,7 +153,8 @@ public class PaintPane extends BorderPane {
 		setTop(horizontalBox);
 
 		for (int i = 0; i < 3; i++) {
-			layerFigureMap.put(cantLayer, new Layer(cantLayer++));
+			layerFigureMap.put(canvasState.getCurrentLayer(), new Layers(canvasState.getAndIncrementLayer()));
+			System.out.println(canvasState.getCurrentLayer());
 			layerFigureMap.get(i).cannotEliminate();
 			layerBox.getItems().add(layerFigureMap.get(i));
 		}
@@ -225,7 +224,7 @@ public class PaintPane extends BorderPane {
 			Point eventPoint = new Point(event.getX(), event.getY());
 			boolean found = false;
 			StringBuilder label = new StringBuilder("Se seleccionó: ");
-			for (Layer layer : layerFigureMap.values()) {
+			for (Layers layer : layerFigureMap.values()) {
 				for (Figure figure : layer.figures()) {
 					if (figure.belongs(eventPoint)) {
 						found = true;
@@ -261,9 +260,9 @@ public class PaintPane extends BorderPane {
 		Point eventPoint = new Point(event.getX(), event.getY());
 		boolean found = false;
 		StringBuilder label = new StringBuilder();
-		List<Layer> layersReversed = new ArrayList<>(layerFigureMap.values());
+		List<Layers> layersReversed = new ArrayList<>(layerFigureMap.values());
 		Collections.reverse(layersReversed);
-		for (Layer layer : layersReversed) {
+		for (Layers layer : layersReversed) {
 			List<Figure> figuresReversed = new ArrayList<>((Collection) layer.figures());
 			Collections.reverse(figuresReversed);
 			for (Figure figure : figuresReversed) {
@@ -438,18 +437,16 @@ public class PaintPane extends BorderPane {
 		redrawCanvas();
 	}
 	private void addLayerAction(){
-		layerFigureMap.put(cantLayer,new Layer(cantLayer++));
-		layerBox.getItems().add(layerFigureMap.get(cantLayer-1));
-		currentLayer = layerFigureMap.get(cantLayer-1);
+		layerFigureMap.put(canvasState.getCurrentLayer(),new Layers(canvasState.getAndIncrementLayer()));
+		layerBox.getItems().add(layerFigureMap.get(canvasState.getCurrentLayer()-1));
+		currentLayer = layerFigureMap.get(canvasState.getCurrentLayer()-1);
 		layerBox.setValue(currentLayer);
 	}
 	private void removeLayerAction(){
 		try {
 			currentLayer.canEliminateException();
 			layerFigureMap.remove(currentLayer.getLayerNum());
-			int size = layerBox.getItems().size();
 			layerBox.getItems().remove(currentLayer);
-			currentLayer = layerFigureMap.get(size - 1);
 			//Agregue esto porque cuando eliminabamos aparecia en choicebox como si
 			//estuviesemos en la capa q eliminamos.
 			layerBox.setValue(layerFigureMap.get(0));
@@ -499,7 +496,7 @@ public class PaintPane extends BorderPane {
 
 	private void redrawCanvas() {
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-		for (Layer layer : layerFigureMap.values()) {
+		for (Layers layer : layerFigureMap.values()) {
 			if (!layer.getIsHidden()) {
 				for (Figure figure : layer.figures()) {
 					if (figure.equals(selectedFigure)) {
