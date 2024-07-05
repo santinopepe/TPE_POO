@@ -4,7 +4,8 @@ import java.util.Objects;
 
 public class Rectangle implements Figure{
 
-    private Point topLeft, bottomRight;
+    private final Point topLeft;
+    private final Point bottomRight;
 
     public Rectangle(Point topLeft, Point bottomRight) {
         this.topLeft = topLeft;

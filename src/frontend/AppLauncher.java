@@ -1,13 +1,12 @@
 package frontend;
 
 import backend.Layers;
-import backend.Layer;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 
-//Cuando esta oculta la capa tire warning si se quiere dibujar.
+
 public class AppLauncher extends Application {
 
 	public static void main(String[] args) {

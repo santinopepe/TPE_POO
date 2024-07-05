@@ -1,7 +1,7 @@
 package backend.model;
 
 public class Square extends Rectangle {
-    private double size;
+    private final double size;
 
     public Square(Point topLeft, double size) {
         super(topLeft, new Point(topLeft.getX() + size, topLeft.getY() + size));

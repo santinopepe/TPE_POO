@@ -1,8 +1,9 @@
 package backend;
 
+import backend.Exceptions.HiddenLayerException;
+import backend.Exceptions.NotDeletableLayerException;
 import backend.model.Figure;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 
@@ -31,6 +32,11 @@ public class Layer extends ArrayList<Figure> {
     public boolean getCanEliminate(){
         return canEliminate;
     }
+    public void canEliminateException(){
+        if(!canEliminate){
+            throw new NotDeletableLayerException();
+        }
+    }
 
     public Iterable<Figure> figures() {
         return this;
@@ -41,8 +47,15 @@ public class Layer extends ArrayList<Figure> {
     }
 
     public boolean getIsHidden(){
-        return isHidden;
+       return isHidden;
     }
+
+    public void getHiddenException(){
+        if(isHidden){
+            throw new HiddenLayerException();
+        }
+    }
+
     @Override
     public String toString() {
         return "Capa %d".formatted(layerNum+1);

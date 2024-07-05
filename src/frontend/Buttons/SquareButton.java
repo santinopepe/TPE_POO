@@ -3,9 +3,6 @@ package frontend.Buttons;
 import backend.model.Figure;
 import backend.model.Point;
 import backend.model.Square;
-import frontend.DrawFigures.DrawFigure;
-import frontend.DrawFigures.FigureProperties;
-import javafx.scene.canvas.GraphicsContext;
 
 public class SquareButton extends RectangleButton{
 
