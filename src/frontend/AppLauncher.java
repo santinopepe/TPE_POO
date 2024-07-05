@@ -7,7 +7,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 
-
+//Corregir pregunta del girhub.
 public class AppLauncher extends Application {
 
 	public static void main(String[] args) {
