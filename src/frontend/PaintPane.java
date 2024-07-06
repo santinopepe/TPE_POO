@@ -82,10 +82,10 @@ public class PaintPane extends BorderPane {
 	public PaintPane(CanvasState canvasState,StatusPane statusPane) {
 		this.canvasState = canvasState;
 
- 		Label shadowLable = new Label("Sombras");
-		Label borderLable = new Label("Borde");
-		Label fillingLable = new Label("Relleno");
-		Label actionLable = new Label("Acciones");
+ 		Label shadowLabel = new Label("Sombras");
+		Label borderLabel = new Label("Borde");
+		Label fillingLabel = new Label("Relleno");
+		Label actionLabel = new Label("Acciones");
 
 
 		shadowsBox.getItems().addAll(ShadowType.NONE, ShadowType.SIMPLE, ShadowType.COLOURED, ShadowType.SIMPLE_INVERSED, ShadowType.COLOURED_INVERSED);
@@ -108,15 +108,15 @@ public class PaintPane extends BorderPane {
 
 		VBox buttonsBox = new VBox(10);
 		buttonsBox.getChildren().addAll(toolsArr);
-		buttonsBox.getChildren().add(shadowLable);
+		buttonsBox.getChildren().add(shadowLabel);
 		buttonsBox.getChildren().add(shadowsBox);
-		buttonsBox.getChildren().add(fillingLable);
+		buttonsBox.getChildren().add(fillingLabel);
 		buttonsBox.getChildren().add(fillColorPicker);
 		buttonsBox.getChildren().add(fillSecondaryColorPicker);
-		buttonsBox.getChildren().add(borderLable);
+		buttonsBox.getChildren().add(borderLabel);
 		buttonsBox.getChildren().add(edgeBox);
 		buttonsBox.getChildren().add(borderSlider);
-		buttonsBox.getChildren().add(actionLable);
+		buttonsBox.getChildren().add(actionLabel);
 
 
 		Button[] actionsArray = {duplicateButton, divideButton, moveButton};
@@ -130,7 +130,7 @@ public class PaintPane extends BorderPane {
 		Button[] addRemoveArr ={addLayer,removeLayer};
 		setCustomButtons(addRemoveArr);
 
-		//Seteamos que inicialmente el boton de mostrar capa este seleccionado.
+		//Inicializamos el botón de mostrar capa como seleccionado.
 		showLayer.fire();
 
 		buttonsBox.setPadding(new Insets(5));
@@ -150,11 +150,8 @@ public class PaintPane extends BorderPane {
 		horizontalBox.setPrefHeight(50);
 		setTop(horizontalBox);
 
-		for (int i = 0; i < 3; i++) {
-			layerFigureMap.put(canvasState.getCurrentLayer(), new Layers(canvasState.getAndIncrementLayer()));
-			layerFigureMap.get(i).cannotEliminate();
-			layerBox.getItems().add(layerFigureMap.get(i));
-		}
+		//Inicializamos las primeras capas del layerMap
+		setLayerMap();
 
 		layerBox.setValue(layerFigureMap.get(0));
 		currentLayer = layerFigureMap.get(0);
@@ -218,9 +215,11 @@ public class PaintPane extends BorderPane {
 			Point eventPoint = new Point(event.getX(), event.getY());
 			boolean found = false;
 			StringBuilder label = new StringBuilder("Se seleccionó: ");
-			for (Layers layer : layerFigureMap.values()) {
+			List<Layers> layersReversed = creatorLayersReversed();
+			for (Layers layer : layersReversed) {
 				if (!layer.getIsHidden()){
-					for (Figure figure : layer.figures()) {
+					List<Figure> figuresReversed = creatorFiguresReversed(layer.figures());
+					for (Figure figure : figuresReversed) {
 						if (figure.belongs(eventPoint)) {
 							found = true;
 							selectedFigure = figure;
@@ -259,11 +258,9 @@ public class PaintPane extends BorderPane {
 		Point eventPoint = new Point(event.getX(), event.getY());
 		boolean found = false;
 		StringBuilder label = new StringBuilder();
-		List<Layers> layersReversed = new ArrayList<>(layerFigureMap.values());
-		Collections.reverse(layersReversed);
+		List<Layers> layersReversed = creatorLayersReversed();
 		for (Layers layer : layersReversed) {
-			List<Figure> figuresReversed = new ArrayList<>((Collection) layer.figures());
-			Collections.reverse(figuresReversed);
+			List<Figure> figuresReversed = creatorFiguresReversed(layer.figures());
 			for (Figure figure : figuresReversed) {
 				if (figure.belongs(eventPoint)) {
 					found = true;
@@ -295,7 +292,7 @@ public class PaintPane extends BorderPane {
 								fillSecondaryColorPicker.getValue(),
 								edgeBox.getValue(), borderSlider.getValue());
 
-						//VER DE SACAR EL PARAMETRO NEWFIGURE.
+						//VER DE SACAR EL PARÁMETRO NEWFIGURE.
 						figurePropertiesMap.put(newFigure, button.createDrawfigure(gc, fp, newFigure));
 						layerFigureMap.get(currentLayer.getLayerNum()).add(newFigure);
 						figureButtonMap.put(newFigure, button);
@@ -417,9 +414,9 @@ public class PaintPane extends BorderPane {
 	//Acciones con layers
 	private void layerBoxAction(){
 		currentLayer = layerBox.getValue();
-		//Pongo en null por si habia antes un figura seleccionada
+		//Pongo en null por si había antes un figura seleccionada
 		selectedFigure = null;
-		//VER SI PODEMOS HACER UN METODO QUE HAGA ESTO.
+		//VER SI PODEMOS HACER UN MÉTODO QUE HAGA ESTO.
 		if (currentLayer.getIsHidden()){
 			hideLayer.fire();
 		} else {
@@ -446,8 +443,8 @@ public class PaintPane extends BorderPane {
 			currentLayer.canEliminateException();
 			layerFigureMap.remove(currentLayer.getLayerNum());
 			layerBox.getItems().remove(currentLayer);
-			//Agregue esto porque cuando eliminabamos aparecia en choicebox como si
-			//estuviesemos en la capa q eliminamos.
+			//Agregue esto porque cuando eliminábamos aparecía en choiceBox como si
+			//estuviésemos en la capa que eliminamos.
 			layerBox.setValue(layerFigureMap.get(0));
 
 		}catch (NotDeletableLayerException ex){
@@ -455,7 +452,7 @@ public class PaintPane extends BorderPane {
 		}
 	}
 
-	//Acciones que afectan las carateristicas de las figuras.
+	//Acciones que afectan las características de las figuras.
 
 	private void edgeBoxAction(){
 		if(selectedFigure != null && selectionButton.isSelected()) {
@@ -550,5 +547,25 @@ public class PaintPane extends BorderPane {
         alert.showAndWait();
 	}
 
+	private void setLayerMap(){
+		for (int i = 0; i < 3; i++) {
+			layerFigureMap.put(canvasState.getCurrentLayer(), new Layers(canvasState.getAndIncrementLayer()));
+			System.out.println(canvasState.getCurrentLayer());
+			layerFigureMap.get(i).cannotEliminate();
+			layerBox.getItems().add(layerFigureMap.get(i));
+		}
+	}
+
+	private List<Layers> creatorLayersReversed() {
+		List<Layers> layersReversed = new ArrayList<>(layerFigureMap.values());
+		Collections.reverse(layersReversed);
+		return layersReversed;
+	}
+
+	private List<Figure> creatorFiguresReversed(Iterable<Figure> figures) {
+		List<Figure> figuresReversed = new ArrayList<>((Collection) figures);
+		Collections.reverse(figuresReversed);
+		return figuresReversed;
+	}
 }
 
