@@ -234,7 +234,6 @@ public class PaintPane extends BorderPane {
 			// se recorren por encima de las de capas inferiores.
 			List<Layers> layersReversed = creatorLayersReversed();
 			for (Layers layer : layersReversed) {
-				if (!layer.getIsHidden()){
 					List<Figure> figuresReversed = creatorFiguresReversed(layer.figures());
 					for (Figure figure : figuresReversed) {
 						if (figure.belongs(eventPoint)) {
@@ -246,7 +245,7 @@ public class PaintPane extends BorderPane {
 						}
 					}
 					if (found) break;
-				}
+
 			}
 			if (found) {
 				setPreviousProp();
@@ -267,6 +266,7 @@ public class PaintPane extends BorderPane {
 				Point eventPoint = new Point(event.getX(), event.getY());
 				double diffX = (eventPoint.getX() - startPoint.getX()) / 100;
 				double diffY = (eventPoint.getY() - startPoint.getY()) / 100;
+
 				selectedFigure.moveCoordX(diffX);
 				selectedFigure.moveCoordY(diffY);
 				redrawCanvas();
@@ -281,11 +281,13 @@ public class PaintPane extends BorderPane {
 		StringBuilder label = new StringBuilder();
 		List<Layers> layersReversed = creatorLayersReversed();
 		for (Layers layer : layersReversed) {
-			List<Figure> figuresReversed = creatorFiguresReversed(layer.figures());
-			for (Figure figure : figuresReversed) {
-				if (figure.belongs(eventPoint)) {
-					found = true;
-					label.append(figure);
+			if(!layer.getIsHidden()) {
+				List<Figure> figuresReversed = creatorFiguresReversed(layer.figures());
+				for (Figure figure : figuresReversed) {
+					if (figure.belongs(eventPoint)) {
+						found = true;
+						label.append(figure);
+					}
 				}
 			}
 		}
