@@ -225,12 +225,16 @@ public class PaintPane extends BorderPane {
 			boolean found = false;
 			StringBuilder label = new StringBuilder("Se seleccionó: ");
 			for (Layers layer : layerFigureMap.values()) {
-				for (Figure figure : layer.figures()) {
-					if (figure.belongs(eventPoint)) {
-						found = true;
-						selectedFigure = figure;
-						label.append(figure);
+				if (!layer.getIsHidden()){
+					for (Figure figure : layer.figures()) {
+						if (figure.belongs(eventPoint)) {
+							found = true;
+							selectedFigure = figure;
+							label.append(figure);
+							break;
+						}
 					}
+					if (found) break;
 				}
 			}
 			if (found) {
