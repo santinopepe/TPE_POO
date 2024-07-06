@@ -2,9 +2,10 @@ package frontend.DrawFigures;
 
 import javafx.scene.canvas.GraphicsContext;
 
+//Enum para los tres tipos de bordes
 public enum EdgeType {
 
-    NORMAL(){
+    NORMAL{
         @Override
         public void getBorder(GraphicsContext gc) {
            gc.setLineDashes(0);
@@ -15,7 +16,7 @@ public enum EdgeType {
             return "Normal";
         }
     },
-    SIMPLE_DOTTED(){
+    SIMPLE_DOTTED{
         @Override
         public void getBorder(GraphicsContext gc) {
             gc.setLineDashes(10);
@@ -26,7 +27,7 @@ public enum EdgeType {
             return "Simple";
         }
     },
-    COMPLEX_DOTTED(){
+    COMPLEX_DOTTED{
         @Override
         public void getBorder(GraphicsContext gc) {
             gc.setLineDashes(30,10,15,10);

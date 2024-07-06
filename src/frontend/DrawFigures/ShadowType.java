@@ -1,6 +1,7 @@
 package frontend.DrawFigures;
 import javafx.scene.paint.Color;
 
+//Enum de los distintos tipos de sombra.
 public enum ShadowType {
     NONE(0){
 

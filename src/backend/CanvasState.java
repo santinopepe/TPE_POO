@@ -1,6 +1,6 @@
 package backend;
 
-//Cambiamos CanvasState por layer.
+//Esta clase se utiliza como central de capas.
 public class CanvasState {
     private static final int  INITIAL_LAYER = 0;
     private static int currentLayer = INITIAL_LAYER;

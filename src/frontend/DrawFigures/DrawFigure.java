@@ -7,7 +7,7 @@ import javafx.scene.paint.*;
 
 public abstract class DrawFigure{
 
-    private GraphicsContext gc;
+    private final GraphicsContext gc;
     private final FigureProperties figureProperties;
     private final Figure figure;
 
@@ -19,7 +19,6 @@ public abstract class DrawFigure{
 
     public void setOvalShadow(Point centerPoint, double mayorAxis, double minorAxis){
         if(!figureProperties.getShadowType().equals(ShadowType.NONE)){
-            Ellipse shadow = new Ellipse(centerPoint, mayorAxis, minorAxis);
             gc.setFill(figureProperties.getShadowType().getColor(figureProperties.getColor()));
             gc.fillOval(figureProperties.getShadowType().shadowCoordCalc(centerPoint.getX(),mayorAxis),
                     figureProperties.getShadowType().shadowCoordCalc(centerPoint.getY(),minorAxis),mayorAxis,minorAxis);
@@ -28,9 +27,7 @@ public abstract class DrawFigure{
 
     public void setRectangleShadow(Point topLeft, Point bottomRight){
         if(!figureProperties.getShadowType().equals(ShadowType.NONE)){
-            Rectangle shadow = new Rectangle(topLeft, bottomRight);
             gc.setFill(figureProperties.getShadowType().getColor(figureProperties.getColor()));
-
             gc.fillRect(figureProperties.getShadowType().shadowCoordCalc(topLeft.getX(),0),figureProperties.getShadowType().shadowCoordCalc(topLeft.getY(),0),
                     figureProperties.getShadowType().rectCalc(topLeft.getX(), bottomRight.getX()), figureProperties.getShadowType().rectCalc(topLeft.getY(), bottomRight.getY()));
         }
@@ -56,6 +53,7 @@ public abstract class DrawFigure{
 
     public abstract void drawFigure();
 
+    //Método para verificar si ambos colores del gradiente son iguales
     public boolean areEqual(){
         return figureProperties.getColor().equals(figureProperties.getSecondaryColor());
     }
@@ -71,7 +69,5 @@ public abstract class DrawFigure{
     public FigureProperties getFigureProperties(){
         return figureProperties;
     }
-
-    public abstract DrawFigure updateFigureProperties(Color color, ShadowType shadow, Color secColor, EdgeType edge, Double width );
 
 }

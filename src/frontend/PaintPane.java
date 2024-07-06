@@ -35,6 +35,7 @@ public class PaintPane extends BorderPane {
 	private final ToggleButton selectionButton = new ToggleButton("Seleccionar");
 	private final ToggleButton deleteButton = new ToggleButton("Borrar");
 
+	// Botones de las figuras.
 	private final CustomButton rectangleButton = new RectangleButton("Rectángulo");
 	private final CustomButton circleButton = new CircleButton("Círculo");
 	private final CustomButton squareButton = new SquareButton("Cuadrado");
@@ -44,6 +45,8 @@ public class PaintPane extends BorderPane {
 	private final Button duplicateButton = new Button("Duplicar");
 	private final Button divideButton = new Button("Dividir");
 	private final Button moveButton = new Button("Mov. Centro");
+
+
 	private final Button addLayer = new Button("Agregar capa");
 	private final Button removeLayer = new Button("Eliminar capa");
 	private final RadioButton showLayer = new RadioButton("Mostrar");
@@ -55,12 +58,13 @@ public class PaintPane extends BorderPane {
 	//Selector del color secundario.
 	private final ColorPicker fillSecondaryColorPicker = new ColorPicker(Color.AQUA);
 
-	//slider para el borde
+	//Slider para el borde
 	private final Slider borderSlider = new Slider(0,10, 0);
 
 	// Dibujar una figura
 	private Point startPoint;
 
+	//Capa actual
 	private Layers currentLayer;
 
 	//CanvasState
@@ -69,12 +73,16 @@ public class PaintPane extends BorderPane {
 	// Seleccionar una figura
 	private Figure selectedFigure;
 
+	// Mapa que asocia cada figura con sus propiedades
 	private final Map<Figure, DrawFigure> figurePropertiesMap = new HashMap<>();
 
+	// Mapa que asocia una figura, con botón para poder seguir creando figuras del tipo necesario
 	private final Map<Figure,CustomButton> figureButtonMap = new HashMap<>();
 
+	//Mapa que asocia el número de capa con layers que tendrá a todas las figuras
 	private final SortedMap<Integer, Layers> layerFigureMap = new TreeMap<>();
 
+	//ChoiceBoxes para elegir la sombra, borde y capa
 	private final ChoiceBox<ShadowType> shadowsBox = new ChoiceBox<>();
 	private final ChoiceBox<EdgeType> edgeBox = new ChoiceBox<>();
 	private final ChoiceBox<Layers> layerBox = new ChoiceBox<>();
@@ -82,17 +90,20 @@ public class PaintPane extends BorderPane {
 	public PaintPane(CanvasState canvasState,StatusPane statusPane) {
 		this.canvasState = canvasState;
 
+		//Etiquetas de las distintas funcionalidades
  		Label shadowLabel = new Label("Sombras");
 		Label borderLabel = new Label("Borde");
 		Label fillingLabel = new Label("Relleno");
 		Label actionLabel = new Label("Acciones");
 
-
+		//Inicialización de las opciones de sombras y bordes
 		shadowsBox.getItems().addAll(ShadowType.NONE, ShadowType.SIMPLE, ShadowType.COLOURED, ShadowType.SIMPLE_INVERSED, ShadowType.COLOURED_INVERSED);
 		edgeBox.getItems().addAll(EdgeType.NORMAL,EdgeType.SIMPLE_DOTTED, EdgeType.COMPLEX_DOTTED);
 
+		//Inicialización del valor predeterminado
 		shadowsBox.setValue(ShadowType.NONE);
 		edgeBox.setValue(EdgeType.NORMAL);
+
 
 		borderSlider.setMin(0);
 		borderSlider.setMax(10);
@@ -106,6 +117,8 @@ public class PaintPane extends BorderPane {
 		//Barra vertical
 		setButtons(toolsArr,tools);
 
+
+		//Agregado de los botones
 		VBox buttonsBox = new VBox(10);
 		buttonsBox.getChildren().addAll(toolsArr);
 		buttonsBox.getChildren().add(shadowLabel);
@@ -200,6 +213,7 @@ public class PaintPane extends BorderPane {
 		setRight(canvas);
 	}
 
+	//Función, que se utiliza cuando se usa el botón de selección.
 	private void selectionButtonAction(){
 		if (selectionButton.isSelected()) {
 			if (selectedFigure != null) {
@@ -215,6 +229,9 @@ public class PaintPane extends BorderPane {
 			Point eventPoint = new Point(event.getX(), event.getY());
 			boolean found = false;
 			StringBuilder label = new StringBuilder("Se seleccionó: ");
+
+			// Damos vuelta las capas asi las etiquetas de las figuras de capas superiores
+			// se recorren por encima de las de capas inferiores.
 			List<Layers> layersReversed = creatorLayersReversed();
 			for (Layers layer : layersReversed) {
 				if (!layer.getIsHidden()){
@@ -242,6 +259,8 @@ public class PaintPane extends BorderPane {
 			redrawCanvas();
 		}
 	}
+
+	//Método para mover a la figura
 	private void mouseDragged(MouseEvent event){
 		if(selectionButton.isSelected()) {
 			if(selectedFigure!=null){
@@ -254,6 +273,8 @@ public class PaintPane extends BorderPane {
 			}
 		}
 	}
+
+	//Se aplica mientras el mouse está en movimiento
 	private void mouseMoved(MouseEvent event, StatusPane statusPane){
 		Point eventPoint = new Point(event.getX(), event.getY());
 		boolean found = false;
@@ -274,16 +295,20 @@ public class PaintPane extends BorderPane {
 			statusPane.updateStatus(eventPoint.toString());
 		}
 	}
+
+	//Se aplica cuando se desoprime el mouse
 	private void mouseReleased(MouseEvent event, CustomButton[] customButtons){
 		Point endPoint = new Point(event.getX(), event.getY());
 		if(startPoint == null || endPoint.getX() < startPoint.getX() || endPoint.getY() < startPoint.getY()) {
 			return ;
 		}
-		Figure newFigure = null;
+		Figure newFigure;
 		try {
 			for (CustomButton button : customButtons) {
 				if (button.isSelected()) {
 					currentLayer.getHiddenException();
+
+					//Creamos una nueva figura.
 					newFigure = button.createNewFigure(startPoint, endPoint, Math.abs(endPoint.getX()
 							- startPoint.getX()), Math.abs(endPoint.getY() - startPoint.getY()), Math.abs(endPoint.getX() - startPoint.getX()));
 					if (newFigure != null) {
@@ -292,7 +317,6 @@ public class PaintPane extends BorderPane {
 								fillSecondaryColorPicker.getValue(),
 								edgeBox.getValue(), borderSlider.getValue());
 
-						//VER DE SACAR EL PARÁMETRO NEWFIGURE.
 						figurePropertiesMap.put(newFigure, button.createDrawfigure(gc, fp, newFigure));
 						layerFigureMap.get(currentLayer.getLayerNum()).add(newFigure);
 						figureButtonMap.put(newFigure, button);
@@ -306,6 +330,7 @@ public class PaintPane extends BorderPane {
 		startPoint = null;
 		redrawCanvas();
 	}
+
 	private void mousePressed(MouseEvent event){
 		startPoint = new Point(event.getX(), event.getY());
 	}
@@ -317,13 +342,14 @@ public class PaintPane extends BorderPane {
 			figure = selectedFigure;
 			FigureProperties figureProperties = figurePropertiesMap.get(figure).getFigureProperties();
 
-
+			//Creado del duplicado de la figura
 			Figure duplicateFigure = figureButtonMap.get(figure).createNewFigure(figure.getPoint1().displacePoint(),
 					figure.getPoint2().displacePoint(),
 					figure.getAxis1(),
 					figure.getAxis2(),
 					figure.getAxis1());
 
+			//Creado de las propiedades del duplicado
 			FigureProperties dupProperties = new FigureProperties(
 					figureProperties.getColor(),
 					figureProperties.getShadowType(),
@@ -341,22 +367,26 @@ public class PaintPane extends BorderPane {
 	}
 	private void divideAction(){
 		if(selectedFigure != null) {
+			//Cuentas para dividir el rectángulo y el cuadrado
 			double midX = (selectedFigure.getPoint1().getX() + selectedFigure.getPoint2().getX()) / 2;
 			double midY = (selectedFigure.getPoint1().getY() + selectedFigure.getPoint2().getY()) / 2;
+			//Cuentas para que el cuadrado y rectángulo no se dividan con el mismo alto que la figura inicial
 			double diff = (selectedFigure.getPoint2().getY() - selectedFigure.getPoint1().getY()) / 4;
 
+			//Crea la nueva figura de la izquierda
 			Figure figureLeft = selectedFigure.createDividedFigure(
 					new Point(selectedFigure.getPoint1().getX(), midY - diff),
 					new Point(midX, selectedFigure.getPoint2().getY() - diff),
-					new Point(selectedFigure.getPoint1().getX() - selectedFigure.getAxis1() / 3.93, selectedFigure.getPoint1().getY()),
+					new Point(selectedFigure.getPoint1().getX() - selectedFigure.getAxis1() / 4, selectedFigure.getPoint1().getY()),
 					selectedFigure.getAxis1() / 2,
 					selectedFigure.getAxis2() / 2
 			);
 
+			//Crea la nueva figura de la derecha
 			Figure figureRight = selectedFigure.createDividedFigure(
 					new Point(midX, midY - diff),
 					new Point(selectedFigure.getPoint2().getX(), midY + diff),
-					new Point(selectedFigure.getPoint1().getX() + selectedFigure.getAxis1() / 3.93, selectedFigure.getPoint1().getY()),
+					new Point(selectedFigure.getPoint1().getX() + selectedFigure.getAxis1() / 4, selectedFigure.getPoint1().getY()),
 					selectedFigure.getAxis1() / 2,
 					selectedFigure.getAxis2() / 2
 			);
@@ -396,6 +426,7 @@ public class PaintPane extends BorderPane {
 		selectedFigure = null;
 		redrawCanvas();
 	}
+
 	private void deleteButtonAction(){
 		if(selectedFigure != null){
 			layerFigureMap.get(currentLayer.getLayerNum()).remove(selectedFigure);
@@ -404,6 +435,7 @@ public class PaintPane extends BorderPane {
 		}
 	}
 
+	//Mueve la figura seleccionada al centro del lienzo
 	private void moveAction(){
 		if(selectedFigure != null){
 			selectedFigure.centerFigure(canvas.getWidth(), canvas.getHeight());
@@ -416,12 +448,10 @@ public class PaintPane extends BorderPane {
 		currentLayer = layerBox.getValue();
 		//Pongo en null por si había antes un figura seleccionada
 		selectedFigure = null;
-		//VER SI PODEMOS HACER UN MÉTODO QUE HAGA ESTO.
-		if (currentLayer.getIsHidden()){
-			hideLayer.fire();
-		} else {
-			showLayer.fire();
-		}
+
+
+		fireLayerState(currentLayer.getIsHidden());
+
 		redrawCanvas();
 	}
 	private void hideLayerAction(){
@@ -443,8 +473,6 @@ public class PaintPane extends BorderPane {
 			currentLayer.canEliminateException();
 			layerFigureMap.remove(currentLayer.getLayerNum());
 			layerBox.getItems().remove(currentLayer);
-			//Agregue esto porque cuando eliminábamos aparecía en choiceBox como si
-			//estuviésemos en la capa que eliminamos.
 			layerBox.setValue(layerFigureMap.get(0));
 
 		}catch (NotDeletableLayerException ex){
@@ -490,6 +518,7 @@ public class PaintPane extends BorderPane {
 		}
 	}
 
+
 	private void redrawCanvas() {
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		for (Layers layer : layerFigureMap.values()) {
@@ -507,6 +536,7 @@ public class PaintPane extends BorderPane {
 		}
 	}
 
+	//Este método pone los botones de las características de la figura seleccionada
 	private void setPreviousProp(){
 		FigureProperties fp = figurePropertiesMap.get(selectedFigure).getFigureProperties();
 		fillColorPicker.setValue(fp.getColor());
@@ -516,6 +546,7 @@ public class PaintPane extends BorderPane {
 		shadowsBox.setValue(fp.getShadowType());
 	}
 
+	//Este método inicializa los botones.
 	private void setCustomButtons(Button[] buttons){
 		for(Button button: buttons){
 			button.setMinWidth(90);
@@ -523,6 +554,7 @@ public class PaintPane extends BorderPane {
 		}
 	}
 
+	//Este método inicializa los botones.
 	private void setButtons(ToggleButton[] buttons, ToggleGroup group){
 		for(ToggleButton button: buttons){
 			button.setMinWidth(90);
@@ -531,6 +563,7 @@ public class PaintPane extends BorderPane {
 		}
 	}
 
+	//Alerta la cual se arroja cuando se quiere borrar alguna de las tres primeras capas
 	private void showLayerAlert(String message){
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle("Error de dibujo");
@@ -539,6 +572,7 @@ public class PaintPane extends BorderPane {
         alert.showAndWait();
 	}
 
+	//Alerta la cual se arroja cuando se intenta dibujar en una capa oculta
 	private void showHiddenLayerAlert(String message){
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle("Error de capas");
@@ -547,25 +581,38 @@ public class PaintPane extends BorderPane {
         alert.showAndWait();
 	}
 
+	//Este método inicializa el mapa de las capas con las tres primeras
 	private void setLayerMap(){
 		for (int i = 0; i < 3; i++) {
 			layerFigureMap.put(canvasState.getCurrentLayer(), new Layers(canvasState.getAndIncrementLayer()));
-			System.out.println(canvasState.getCurrentLayer());
 			layerFigureMap.get(i).cannotEliminate();
 			layerBox.getItems().add(layerFigureMap.get(i));
 		}
 	}
 
+	//Devuelve una lista de las capas en orden inverso
 	private List<Layers> creatorLayersReversed() {
 		List<Layers> layersReversed = new ArrayList<>(layerFigureMap.values());
 		Collections.reverse(layersReversed);
 		return layersReversed;
 	}
 
+	//Devuelve una lista de las figuras de la capa en orden inverso
 	private List<Figure> creatorFiguresReversed(Iterable<Figure> figures) {
 		List<Figure> figuresReversed = new ArrayList<>((Collection) figures);
 		Collections.reverse(figuresReversed);
 		return figuresReversed;
 	}
+
+	//Este método aprieta el botón de ocultar o mostrar, dependiendo de en que estado se
+	//encontraba la capa.
+	private void fireLayerState(boolean layerState){
+		if (layerState){
+			hideLayer.fire();
+		} else {
+			showLayer.fire();
+		}
+	}
+
 }
 

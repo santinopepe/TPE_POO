@@ -4,6 +4,7 @@ import javafx.scene.paint.Color;
 
 import java.util.Objects;
 
+//Clase que almacena los valores de las distintas características de las figuras.
 public class FigureProperties {
 
     private  Color color;
@@ -40,13 +41,6 @@ public class FigureProperties {
         return edge;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof FigureProperties that)) return false;
-        return Objects.equals(getColor(), that.getColor()) && Objects.equals(getSecondaryColor(), that.getSecondaryColor()) && getShadowType() == that.getShadowType() && getEdge() == that.getEdge() && Objects.equals(getWidth(), that.getWidth());
-    }
-
     public void setColor(Color color) {
         this.color = color;
     }
@@ -66,4 +60,13 @@ public class FigureProperties {
     public void setWidth(Double width) {
         this.width = width;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof FigureProperties that)) return false;
+        return Objects.equals(getColor(), that.getColor()) && Objects.equals(getSecondaryColor(), that.getSecondaryColor())
+                && getShadowType() == that.getShadowType() && getEdge() == that.getEdge() && Objects.equals(getWidth(), that.getWidth());
+    }
+
 }
