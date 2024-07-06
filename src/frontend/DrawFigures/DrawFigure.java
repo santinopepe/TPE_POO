@@ -7,7 +7,7 @@ import javafx.scene.paint.*;
 
 public abstract class DrawFigure{
 
-    private final GraphicsContext gc;
+    private GraphicsContext gc;
     private final FigureProperties figureProperties;
     private final Figure figure;
 
@@ -50,6 +50,8 @@ public abstract class DrawFigure{
         figureProperties.getEdge().getBorder(gc);
 
     }
+
+
 
     public abstract void drawFigure();
 

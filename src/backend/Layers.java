@@ -5,6 +5,7 @@ import backend.Exceptions.HiddenLayerException;
 import backend.Exceptions.NotDeletableLayerException;
 import backend.model.Figure;
 import java.util.ArrayList;
+import java.util.Objects;
 
 
 //Es una capa del programa que extiende a un ArrayList de las figuras que pertencen a la capa
@@ -59,6 +60,18 @@ public class Layers extends ArrayList<Figure> {
         if(isHidden){
             throw new HiddenLayerException();
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Layers)) return false;
+        return layerNum == ((Layers) o).layerNum;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(layerNum);
     }
 
     @Override

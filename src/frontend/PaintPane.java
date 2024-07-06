@@ -448,10 +448,7 @@ public class PaintPane extends BorderPane {
 		currentLayer = layerBox.getValue();
 		//Pongo en null por si había antes un figura seleccionada
 		selectedFigure = null;
-
-
 		fireLayerState(currentLayer.getIsHidden());
-
 		redrawCanvas();
 	}
 	private void hideLayerAction(){
@@ -517,8 +514,6 @@ public class PaintPane extends BorderPane {
 			redrawCanvas();
 		}
 	}
-
-
 	private void redrawCanvas() {
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		for (Layers layer : layerFigureMap.values()) {
