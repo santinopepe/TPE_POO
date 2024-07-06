@@ -69,8 +69,6 @@ public class PaintPane extends BorderPane {
 	// Seleccionar una figura
 	private Figure selectedFigure;
 
-	private int cantLayer=0;
-
 	private final Map<Figure, DrawFigure> figurePropertiesMap = new HashMap<>();
 
 	private final Map<Figure,CustomButton> figureButtonMap = new HashMap<>();
@@ -154,7 +152,6 @@ public class PaintPane extends BorderPane {
 
 		for (int i = 0; i < 3; i++) {
 			layerFigureMap.put(canvasState.getCurrentLayer(), new Layers(canvasState.getAndIncrementLayer()));
-			System.out.println(canvasState.getCurrentLayer());
 			layerFigureMap.get(i).cannotEliminate();
 			layerBox.getItems().add(layerFigureMap.get(i));
 		}
@@ -206,8 +203,6 @@ public class PaintPane extends BorderPane {
 		setRight(canvas);
 	}
 
-
-
 	private void selectionButtonAction(){
 		if (selectionButton.isSelected()) {
 			if (selectedFigure != null) {
@@ -218,7 +213,6 @@ public class PaintPane extends BorderPane {
 	}
 
 	//Acciones con mouse
-
 	private void mouseClicked(MouseEvent event, StatusPane statusPane){
 		if(selectionButton.isSelected()) {
 			Point eventPoint = new Point(event.getX(), event.getY());
@@ -230,6 +224,7 @@ public class PaintPane extends BorderPane {
 						if (figure.belongs(eventPoint)) {
 							found = true;
 							selectedFigure = figure;
+							currentLayer=layer;
 							label.append(figure);
 							break;
 						}
@@ -289,9 +284,9 @@ public class PaintPane extends BorderPane {
 		}
 		Figure newFigure = null;
 		try {
-			currentLayer.getHiddenException();
 			for (CustomButton button : customButtons) {
 				if (button.isSelected()) {
+					currentLayer.getHiddenException();
 					newFigure = button.createNewFigure(startPoint, endPoint, Math.abs(endPoint.getX()
 							- startPoint.getX()), Math.abs(endPoint.getY() - startPoint.getY()), Math.abs(endPoint.getX() - startPoint.getX()));
 					if (newFigure != null) {
