@@ -317,7 +317,8 @@ public class PaintPane extends BorderPane {
 						FigureProperties fp = new FigureProperties(fillColorPicker.getValue(),
 								shadowsBox.getValue(),
 								fillSecondaryColorPicker.getValue(),
-								edgeBox.getValue(), borderSlider.getValue());
+								//Se suma 0.1 debido a que cuando el slider se setea en cero funciona inesperadamente
+								edgeBox.getValue(), borderSlider.getValue()+0.1);
 
 						figurePropertiesMap.put(newFigure, button.createDrawfigure(gc, fp, newFigure));
 						layerFigureMap.get(currentLayer.getLayerNum()).add(newFigure);
@@ -498,7 +499,8 @@ public class PaintPane extends BorderPane {
 	private void edgeSliderAction(){
 		if(selectedFigure != null && selectionButton.isSelected()) {
 			DrawFigure df = figurePropertiesMap.get(selectedFigure);
-			df.getFigureProperties().setWidth(borderSlider.getValue());
+			//Se suma 0.1 debido a que cuando el slider se setea en cero funciona inesperadamente
+			df.getFigureProperties().setWidth(borderSlider.getValue()+0.1);
 			redrawCanvas();
 		}
 	}
