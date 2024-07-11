@@ -11,7 +11,7 @@ Santino Pepe, legajo: 64147
 
 ### Idea del proyecto
 
-Se pidió hacer agregar distintas funcionalidades a un programa
+Se pidió agregar distintas funcionalidades a un programa
 el cual ya tenía implementado la creación de distintas formas
 (Rectángulo, Cuadrado, Círculo y Elipse). Las funcionalidades
 que se pedían agregar eran: Agregar distintos tipos de sombra,
